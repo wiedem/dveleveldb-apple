@@ -1,0 +1,16 @@
+--swiftversion 5.5
+--symlinks ignore
+--exclude CSource,.build
+
+--indent 4
+--ifdef no-indent
+--stripunusedargs unnamed-only
+--nospaceoperators ...,..<
+--importgrouping testable-top
+--extensionacl on-extension
+
+--header "Copyright (c) diva-e NEXT GmbH. All rights reserved.\nLicensed under the MIT License."
+
+--disable redundantReturn
+--disable trailingclosures
+--disable blankLinesAroundMark

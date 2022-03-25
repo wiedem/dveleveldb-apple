@@ -1,0 +1,31 @@
+disabled_rules:
+  - line_length
+  - force_cast
+  - trailing_comma
+  - opening_brace
+
+opt_in_rules:
+
+included:
+
+excluded:
+  - .build
+  - Carthage
+
+large_tuple:
+  warning: 5
+  error: 5
+
+file_length:
+  warning: 450
+
+nesting:
+  type_level:
+    warning: 2
+
+type_name:
+  max_length:
+    warning: 45
+  allowed_symbols: ["_"]
+
+reporter: "xcode"
