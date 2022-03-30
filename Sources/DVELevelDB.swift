@@ -14,13 +14,14 @@ public extension LevelDB {
         try __repair(atDirectoryURL: url, options: options)
     }
 
-    convenience init(directoryURL url: URL,
-                     options: Options,
-                     logger: Logger? = VoidLogger(),
-                     keyComparator: KeyComparator? = nil,
-                     filterPolicy: FilterPolicy? = nil,
-                     lruBlockCacheSize: size_t = 0) throws
-    {
+    convenience init(
+        directoryURL url: URL,
+        options: Options,
+        logger: Logger? = VoidLogger(),
+        keyComparator: KeyComparator? = nil,
+        filterPolicy: FilterPolicy? = nil,
+        lruBlockCacheSize: size_t = 0
+    ) throws {
         try self.init(__directoryURL: url,
                       options: options,
                       simpleLogger: logger,
@@ -29,19 +30,22 @@ public extension LevelDB {
                       lruBlockCacheSize: lruBlockCacheSize)
     }
 
-    convenience init(directoryURL url: URL,
-                     options: Options,
-                     formatLogger: FormatLogger,
-                     keyComparator: KeyComparator? = nil,
-                     filterPolicy: FilterPolicy? = nil,
-                     lruBlockCacheSize: size_t = 0) throws
-    {
-        try self.init(__directoryURL: url,
-                      options: options,
-                      formatLogger: formatLogger,
-                      keyComparator: keyComparator,
-                      filterPolicy: filterPolicy,
-                      lruBlockCacheSize: lruBlockCacheSize)
+    convenience init(
+        directoryURL url: URL,
+        options: Options,
+        formatLogger: FormatLogger,
+        keyComparator: KeyComparator? = nil,
+        filterPolicy: FilterPolicy? = nil,
+        lruBlockCacheSize: size_t = 0
+    ) throws {
+        try self.init(
+            __directoryURL: url,
+            options: options,
+            formatLogger: formatLogger,
+            keyComparator: keyComparator,
+            filterPolicy: filterPolicy,
+            lruBlockCacheSize: lruBlockCacheSize
+        )
     }
 
     func value(forKey key: String) throws -> String? {
