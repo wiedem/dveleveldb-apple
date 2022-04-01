@@ -22,12 +22,14 @@ public extension LevelDB {
         filterPolicy: FilterPolicy? = nil,
         lruBlockCacheSize: size_t = 0
     ) throws {
-        try self.init(__directoryURL: url,
-                      options: options,
-                      simpleLogger: logger,
-                      keyComparator: keyComparator,
-                      filterPolicy: filterPolicy,
-                      lruBlockCacheSize: lruBlockCacheSize)
+        try self.init(
+            __directoryURL: url,
+            options: options,
+            simpleLogger: logger,
+            keyComparator: keyComparator,
+            filterPolicy: filterPolicy,
+            lruBlockCacheSize: lruBlockCacheSize
+        )
     }
 
     convenience init(
