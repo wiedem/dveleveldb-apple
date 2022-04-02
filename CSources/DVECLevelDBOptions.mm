@@ -4,23 +4,102 @@
 #import "DVECLevelDBOptions+Internal.h"
 #import "DVECLevelDBLogger.h"
 #import "DVECLevelDBFormattingLoggerFacade.hpp"
+#import "DVECLevelDBSimpleLoggerFacade.hpp"
 
 @implementation DVECLevelDBOptions
 
-- (instancetype)init {
+static size_t _defaultWriteBufferSize = 4 * 1024 * 1024;
+static int _defaultMaxOpenFilesCount = 1000;
+static size_t _defaultBlockSize = 4 * 1024;
+static int _defaultBlockRestartInterval = 16;
+static size_t _defaultMaxFileSize = 2 * 1024 * 1024;
+static DVECLevelDBOptionsCompression _defaultCompression = DVECLevelDBOptionsCompressionSnappy;
+
++ (size_t)defaultWriteBufferSize {
+    return _defaultWriteBufferSize;
+}
+
++ (int)defaultMaxOpenFilesCount {
+    return _defaultMaxOpenFilesCount;
+}
+
++ (size_t)defaultBlockSize {
+    return _defaultBlockSize;
+}
+
++ (int)defaultBlockRestartInterval {
+    return _defaultBlockRestartInterval;
+}
+
++ (size_t)defaultMaxFileSize {
+    return _defaultMaxFileSize;
+}
+
++ (DVECLevelDBOptionsCompression)defaultCompression {
+    return _defaultCompression;
+}
+
++ (leveldb::Logger *)createFormatLoggerFacade:(id<DVECLevelDBFormatLogger>)logger {
+    leveldb::Logger *loggerFacade = nil;
+
+    if ([logger isKindOfClass:[DVECLevelDBVoidLogger class]]) {
+        // Optimization to prevent creation and use of unnecessary logger instance.
+        loggerFacade = new DVECLevelDBFormattingLoggerFacade(nil);
+    } else {
+        loggerFacade = new DVECLevelDBFormattingLoggerFacade(logger);
+    }
+    return loggerFacade;
+}
+
++ (leveldb::Logger *)createSimpleLoggerFacade:(id<DVECLevelDBSimpleLogger>)logger {
+    leveldb::Logger *loggerFacade = nil;
+
+    if ([logger isKindOfClass:[DVECLevelDBVoidLogger class]]) {
+        // Optimization to prevent creation and use of unnecessary logger instance.
+        loggerFacade = new DVECLevelDBSimpleLoggerFacade(nil);
+    } else {
+        loggerFacade = new DVECLevelDBSimpleLoggerFacade(logger);
+    }
+    return loggerFacade;
+}
+
+- (instancetype)initWithCreateDBIfMissing:(BOOL)createDBIfMissing
+                     throwErrorIfDBExists:(BOOL)throwErrorIfDBExists
+                        useParanoidChecks:(BOOL)useParanoidChecks
+                          writeBufferSize:(size_t)writeBufferSize
+                        maxOpenFilesCount:(int)maxOpenFilesCount
+                                blockSize:(size_t)blockSize
+                     blockRestartInterval:(int)blockRestartInterval
+                              maxFileSize:(size_t)maxFileSize
+                                reuseLogs:(BOOL)reuseLogs
+                              compression:(DVECLevelDBOptionsCompression)compression
+{
     if (self = [super init]) {
-        _createDBIfMissing = YES;
-        _throwErrorIfDBExists = NO;
-        _useParanoidChecks = NO;
-        _writeBufferSize = 4 * 1024 * 1024;
-        _maxOpenFilesCount = 1000;
-        _blockSize = 4 * 1024;
-        _blockRestartInterval = 16;
-        _maxFileSize = 2 * 1024 * 1024;
-        _compression = DVECLevelDBOptionsCompressionSnappy;
-        _reuseLogs = NO;
+        _createDBIfMissing = createDBIfMissing;
+        _throwErrorIfDBExists = throwErrorIfDBExists;
+        _useParanoidChecks = useParanoidChecks;
+        _writeBufferSize = writeBufferSize;
+        _maxOpenFilesCount = maxOpenFilesCount;
+        _blockSize = blockSize;
+        _blockRestartInterval = blockRestartInterval;
+        _maxFileSize = maxFileSize;
+        _reuseLogs = reuseLogs;
+        _compression = compression;
     }
     return self;
+}
+
+- (instancetype)init {
+    return [self initWithCreateDBIfMissing:YES
+                      throwErrorIfDBExists:NO
+                         useParanoidChecks:NO
+                           writeBufferSize:DVECLevelDBOptions.defaultWriteBufferSize
+                         maxOpenFilesCount:DVECLevelDBOptions.defaultMaxOpenFilesCount
+                                 blockSize:DVECLevelDBOptions.defaultBlockSize
+                      blockRestartInterval:DVECLevelDBOptions.defaultBlockRestartInterval
+                               maxFileSize:DVECLevelDBOptions.defaultMaxFileSize
+                                 reuseLogs:NO
+                               compression:DVECLevelDBOptions.defaultCompression];
 }
 
 - (leveldb::Options)createDefaultLevelDBOptions {

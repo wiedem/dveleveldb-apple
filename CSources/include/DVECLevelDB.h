@@ -18,10 +18,26 @@ __attribute__((objc_subclassing_restricted))
 @property (nonatomic, strong, readonly) NSURL *directoryURL;
 @property (nonatomic, strong, readonly) DVECLevelDBOptions *options;
 
-+ (BOOL)destroyDbAtDirectoryURL:(NSURL *)url options:(DVECLevelDBOptions *)options error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
-+ (BOOL)repairDbAtDirectoryURL:(NSURL *)url options:(DVECLevelDBOptions *)options error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
++ (BOOL)destroyDbAtDirectoryURL:(NSURL *)url
+                        options:(DVECLevelDBOptions *)options
+                          error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
+
++ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
+                       options:(DVECLevelDBOptions *)options
+                         error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
+
++ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
+                       options:(DVECLevelDBOptions *)options
+                  formatLogger:(nullable id<DVECLevelDBFormatLogger>)formatLogger
+                         error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
+
++ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
+                       options:(DVECLevelDBOptions *)options
+                  simpleLogger:(nullable id<DVECLevelDBSimpleLogger>)simpleLogger
+                         error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
 
 - (instancetype)init NS_UNAVAILABLE;
+
 - (nullable instancetype)initWithDirectoryURL:(NSURL *)url
                                       options:(DVECLevelDBOptions *)options
                                  formatLogger:(nullable id<DVECLevelDBFormatLogger>)formatLogger
@@ -29,6 +45,7 @@ __attribute__((objc_subclassing_restricted))
                                  filterPolicy:(nullable id<DVECLevelDBFilterPolicy>)filterPolicy
                             lruBlockCacheSize:(size_t)lruBlockCacheSize
                                         error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
+
 - (nullable instancetype)initWithDirectoryURL:(NSURL *)url
                                       options:(DVECLevelDBOptions *)options
                                  simpleLogger:(nullable id<DVECLevelDBSimpleLogger>)simpleLogger

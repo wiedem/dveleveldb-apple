@@ -4,10 +4,7 @@
 import Foundation
 
 public extension LevelDB.Options {
-    static let `default`: LevelDB.Options = {
-        let options = LevelDB.Options()
-        options.createDBIfMissing = true
-        options.compression = .snappy
-        return options
-    }()
+    typealias Compression = LevelDB.CompressionOption
+
+    static let `default` = LevelDB.Options()
 }

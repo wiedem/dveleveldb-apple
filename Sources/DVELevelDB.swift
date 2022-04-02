@@ -14,6 +14,14 @@ public extension LevelDB {
         try __repair(atDirectoryURL: url, options: options)
     }
 
+    class func repairDb(at url: URL, options: Options, logger: Logger? = VoidLogger()) throws {
+        try __repair(atDirectoryURL: url, options: options, simpleLogger: logger)
+    }
+
+    class func repairDb(at url: URL, options: Options, formatLogger: FormatLogger) throws {
+        try __repair(atDirectoryURL: url, options: options, formatLogger: formatLogger)
+    }
+
     convenience init(
         directoryURL url: URL,
         options: Options,

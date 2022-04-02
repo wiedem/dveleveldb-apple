@@ -48,8 +48,14 @@
     return YES;
 }
 
-+ (BOOL)repairDbAtDirectoryURL:(NSURL *)url options:(DVECLevelDBOptions *)options error:(NSError **)error {
++ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
+                       options:(DVECLevelDBOptions *)options
+                        logger:(leveldb::Logger *)logger
+                         error:(NSError **)error
+{
     leveldb::Options levelDBOptions = [options createDefaultLevelDBOptions];
+    levelDBOptions.info_log = logger;
+
     leveldb::Status status = leveldb::RepairDB([url.path UTF8String], levelDBOptions);
 
     NSError *levelDBError = [NSError createFromLevelDBStatus:status];
@@ -60,6 +66,31 @@
         return NO;
     }
     return YES;
+}
+
++ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
+                       options:(DVECLevelDBOptions *)options
+                         error:(NSError **)error
+{
+    return [self repairDbAtDirectoryURL:url options:options logger:nil error:error];
+}
+
++ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
+                       options:(DVECLevelDBOptions *)options
+                  formatLogger:(id<DVECLevelDBFormatLogger>)formatLogger
+                         error:(NSError **)error
+{
+    leveldb::Logger *logger = [DVECLevelDBOptions createFormatLoggerFacade:formatLogger];
+    return [self repairDbAtDirectoryURL:url options:options logger:logger error:error];
+}
+
++ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
+                       options:(DVECLevelDBOptions *)options
+                  simpleLogger:(id<DVECLevelDBSimpleLogger>)simpleLogger
+                         error:(NSError **)error
+{
+    leveldb::Logger *logger = [DVECLevelDBOptions createSimpleLoggerFacade:simpleLogger];
+    return [self repairDbAtDirectoryURL:url options:options logger:logger error:error];
 }
 
 + (void)raiseCriticalExceptionForError:(NSError *)error key:(NSString *)key {
@@ -126,14 +157,7 @@
                    lruBlockCacheSize:(size_t)lruBlockCacheSize
                                error:(NSError **)error
 {
-    leveldb::Logger *loggerFacade = nil;
-
-    if ([formatLogger isKindOfClass:[DVECLevelDBVoidLogger class]]) {
-        // Optimization to prevent creation and use of unnecessary logger instance.
-        loggerFacade = new DVECLevelDBFormattingLoggerFacade(nil);
-    } else {
-        loggerFacade = new DVECLevelDBFormattingLoggerFacade(formatLogger);
-    }
+    leveldb::Logger *loggerFacade = [DVECLevelDBOptions createFormatLoggerFacade:formatLogger];
 
     leveldb::Comparator *keyComparatorFacade = nil;
     if (keyComparator != nil) {
@@ -167,14 +191,7 @@
                    lruBlockCacheSize:(size_t)lruBlockCacheSize
                                error:(NSError **)error
 {
-    leveldb::Logger *loggerFacade = nil;
-
-    if ([simpleLogger isKindOfClass:[DVECLevelDBVoidLogger class]]) {
-        // Optimization to prevent creation and use of unnecessary logger instance.
-        loggerFacade = new DVECLevelDBSimpleLoggerFacade(nil);
-    } else {
-        loggerFacade = new DVECLevelDBSimpleLoggerFacade(simpleLogger);
-    }
+    leveldb::Logger *loggerFacade = [DVECLevelDBOptions createSimpleLoggerFacade:simpleLogger];
 
     leveldb::Comparator *keyComparatorFacade = nil;
     if (keyComparator != nil) {

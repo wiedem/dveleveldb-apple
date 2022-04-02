@@ -8,10 +8,17 @@
 #import "leveldb/leveldb/filter_policy.h"
 #import "leveldb/leveldb/cache.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface DVECLevelDBOptions(Internal)
++ (leveldb::Logger *)createFormatLoggerFacade:(id<DVECLevelDBFormatLogger>)logger;
++ (leveldb::Logger *)createSimpleLoggerFacade:(id<DVECLevelDBSimpleLogger>)simpleLogger;
+
 - (leveldb::Options)createDefaultLevelDBOptions;
 - (leveldb::Options)createLevelDBOptionsWithLogger:(nullable leveldb::Logger *)logger
                                      keyComparator:(nullable leveldb::Comparator *)keyComparator
                                       filterPolicy:(nullable leveldb::FilterPolicy *)filterPolicy
                                         blockCache:(nullable leveldb::Cache *)blockCache;
 @end
+
+NS_ASSUME_NONNULL_END
