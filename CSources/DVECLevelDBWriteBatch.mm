@@ -54,21 +54,20 @@
     return YES;
 }
 
-- (void)setValue:(NSString *)value forKey:(NSString *)key {
+- (void)setData:(NSData *)data forKey:(NSData *)key {
     if (key == nil) {
         [self removeValueForKey:key];
         return;
     }
 
-    leveldb::Slice levelDbKey([key UTF8String]);
-    NSData *valueData = [value dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
-    leveldb::Slice levelDbValue((const char *)valueData.bytes, valueData.length);
-    
+    leveldb::Slice levelDbKey = sliceForData(key);
+    leveldb::Slice levelDbValue = sliceForData(data);
+
     _updates->Put(levelDbKey, levelDbValue);
 }
 
-- (void)removeValueForKey:(NSString *)key {
-    leveldb::Slice levelDbKey([key UTF8String]);
+- (void)removeValueForKey:(NSData *)key {
+    leveldb::Slice levelDbKey = sliceForData(key);
     _updates->Delete(levelDbKey);
 }
 

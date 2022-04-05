@@ -39,28 +39,20 @@ static DVECLevelDBOptionsCompression _defaultCompression = DVECLevelDBOptionsCom
     return _defaultCompression;
 }
 
-+ (leveldb::Logger *)createFormatLoggerFacade:(id<DVECLevelDBFormatLogger>)logger {
-    leveldb::Logger *loggerFacade = nil;
-
-    if ([logger isKindOfClass:[DVECLevelDBVoidLogger class]]) {
-        // Optimization to prevent creation and use of unnecessary logger instance.
-        loggerFacade = new DVECLevelDBFormattingLoggerFacade(nil);
-    } else {
-        loggerFacade = new DVECLevelDBFormattingLoggerFacade(logger);
++ (leveldb::Logger *)createSimpleLoggerFacade:(id<DVECLevelDBSimpleLogger>)logger {
+    // Optimization to prevent creation and use of unnecessary logger instance.
+    if (logger == nil || [logger isKindOfClass:[DVECLevelDBVoidLogger class]]) {
+        return nil;
     }
-    return loggerFacade;
+    return new DVECLevelDBSimpleLoggerFacade(logger);
 }
 
-+ (leveldb::Logger *)createSimpleLoggerFacade:(id<DVECLevelDBSimpleLogger>)logger {
-    leveldb::Logger *loggerFacade = nil;
-
-    if ([logger isKindOfClass:[DVECLevelDBVoidLogger class]]) {
-        // Optimization to prevent creation and use of unnecessary logger instance.
-        loggerFacade = new DVECLevelDBSimpleLoggerFacade(nil);
-    } else {
-        loggerFacade = new DVECLevelDBSimpleLoggerFacade(logger);
++ (leveldb::Logger *)createFormatLoggerFacade:(id<DVECLevelDBFormatLogger>)logger {
+    // Optimization to prevent creation and use of unnecessary logger instance.
+    if (logger == nil || [logger isKindOfClass:[DVECLevelDBVoidLogger class]]) {
+        return nil;
     }
-    return loggerFacade;
+    return new DVECLevelDBFormattingLoggerFacade(logger);
 }
 
 - (instancetype)initWithCreateDBIfMissing:(BOOL)createDBIfMissing

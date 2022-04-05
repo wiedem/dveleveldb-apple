@@ -9,7 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_SWIFT_NAME(CLevelDB.WriteBatch)
 @interface DVECLevelDBWriteBatch: NSObject
-@property (nonatomic, strong, readonly) DVECLevelDB* db;
+@property (nonatomic, strong, readonly) DVECLevelDB *db;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithDB:(DVECLevelDB *)db NS_DESIGNATED_INITIALIZER;
@@ -19,8 +19,8 @@ NS_SWIFT_NAME(CLevelDB.WriteBatch)
 - (BOOL)syncWrite:(NSError *_Nullable *_Nullable)error;
 - (BOOL)writeWithOptions:(DVECLevelDBWriteOptions *)options error:(NSError *_Nullable *_Nullable)error;
 
-- (void)setValue:(nullable NSString *)value forKey:(NSString *)key;
-- (void)removeValueForKey:(NSString *)key;
+- (void)setData:(nullable NSData *)data forKey:(NSData *)key;
+- (void)removeValueForKey:(NSData *)key;
 @end
 
 NS_ASSUME_NONNULL_END

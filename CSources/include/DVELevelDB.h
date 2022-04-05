@@ -9,5 +9,6 @@
 #import "DVECLevelDBOptions.h"
 #import "DVECLevelDBSnapshot.h"
 #import "DVECLevelDBKeyComparator.h"
+#import "DVECLevelDBBlockKeyComparator.h"
 #import "DVECLevelDBFilterPolicy.h"
 #import "DVECLevelDBLogger.h"

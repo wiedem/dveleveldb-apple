@@ -32,7 +32,7 @@
     _iterator = nil;
 }
 
-- (nullable NSString *)nextObject {
+- (nullable NSData *)nextObject {
     if (_iterator->Valid() == false) {
         return nil;
     }
@@ -44,7 +44,7 @@
         _iterator->Prev();
     }
 
-    return [[NSString alloc] initWithBytes:keySlice.data() length:keySlice.size() encoding:NSUTF8StringEncoding];
+    return [[NSData alloc] initWithBytes:keySlice.data() length:keySlice.size()];
 }
 
 @end

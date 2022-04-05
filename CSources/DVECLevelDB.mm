@@ -17,6 +17,30 @@
 
 #import "leveldb/leveldb/db.h"
 
+#pragma mark NSData conversion helper functions
+leveldb::Slice sliceForData(NSData *data) {
+    return leveldb::Slice((const char *)data.bytes, data.length);
+}
+
+NSData *dataForSlice(const leveldb::Slice &slice) {
+    return [[NSData alloc] initWithBytesNoCopy:(void *)slice.data() length:slice.size() freeWhenDone:NO];
+}
+
+NSData *dataForString(const std::string &string) {
+    return [[NSData alloc] initWithBytesNoCopy:(void *)string.data() length:string.size() freeWhenDone:NO];
+}
+
+void copyDataToString(NSData *data, std::string &string) {
+    if (data.length != string.size()) {
+        string.resize(data.length);
+    }
+
+    if (data.length > 0) {
+        [data getBytes:(void *)string.data() length:string.length()];
+    }
+}
+
+#pragma mark -
 @interface DVECLevelDB()
 @property (nonatomic, strong) NSURL *directoryURL;
 @property (nonatomic, strong) DVECLevelDBOptions *options;
@@ -70,9 +94,11 @@
 
 + (BOOL)repairDbAtDirectoryURL:(NSURL *)url
                        options:(DVECLevelDBOptions *)options
+                  simpleLogger:(id<DVECLevelDBSimpleLogger>)simpleLogger
                          error:(NSError **)error
 {
-    return [self repairDbAtDirectoryURL:url options:options logger:nil error:error];
+    leveldb::Logger *logger = [DVECLevelDBOptions createSimpleLoggerFacade:simpleLogger];
+    return [self repairDbAtDirectoryURL:url options:options logger:logger error:error];
 }
 
 + (BOOL)repairDbAtDirectoryURL:(NSURL *)url
@@ -84,16 +110,7 @@
     return [self repairDbAtDirectoryURL:url options:options logger:logger error:error];
 }
 
-+ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
-                       options:(DVECLevelDBOptions *)options
-                  simpleLogger:(id<DVECLevelDBSimpleLogger>)simpleLogger
-                         error:(NSError **)error
-{
-    leveldb::Logger *logger = [DVECLevelDBOptions createSimpleLoggerFacade:simpleLogger];
-    return [self repairDbAtDirectoryURL:url options:options logger:logger error:error];
-}
-
-+ (void)raiseCriticalExceptionForError:(NSError *)error key:(NSString *)key {
++ (void)raiseCriticalExceptionForError:(NSError *)error key:(NSData *)key {
     NSString *debugDescription = error.userInfo[NSDebugDescriptionErrorKey];
     if (debugDescription == nil) {
         debugDescription = @"unknown error";
@@ -151,40 +168,6 @@
 
 - (instancetype)initWithDirectoryURL:(NSURL *)url
                              options:(DVECLevelDBOptions *)options
-                        formatLogger:(id<DVECLevelDBFormatLogger>)formatLogger
-                       keyComparator:(nullable id<DVECLevelDBKeyComparator>)keyComparator
-                        filterPolicy:(nullable id<DVECLevelDBFilterPolicy>)filterPolicy
-                   lruBlockCacheSize:(size_t)lruBlockCacheSize
-                               error:(NSError **)error
-{
-    leveldb::Logger *loggerFacade = [DVECLevelDBOptions createFormatLoggerFacade:formatLogger];
-
-    leveldb::Comparator *keyComparatorFacade = nil;
-    if (keyComparator != nil) {
-        keyComparatorFacade = new DVECLevelDBComparatorFacade(keyComparator);
-    }
-
-    leveldb::FilterPolicy *filterPolicyFacade = nil;
-    if (filterPolicy != nil) {
-        filterPolicyFacade = new DVECLevelDBFilterPolicyFacade(filterPolicy);
-    }
-
-    leveldb::Cache *blockCache = nil;
-    if (lruBlockCacheSize > 0) {
-        blockCache = leveldb::NewLRUCache(lruBlockCacheSize);
-    }
-
-    return [self initWithDirectoryURL:url
-                              options:options
-                               logger:loggerFacade
-                        keyComparator:keyComparatorFacade
-                         filterPolicy:filterPolicyFacade
-                           blockCache:blockCache
-                                error:error];
-}
-
-- (instancetype)initWithDirectoryURL:(NSURL *)url
-                             options:(DVECLevelDBOptions *)options
                         simpleLogger:(id<DVECLevelDBSimpleLogger>)simpleLogger
                        keyComparator:(nullable id<DVECLevelDBKeyComparator>)keyComparator
                         filterPolicy:(nullable id<DVECLevelDBFilterPolicy>)filterPolicy
@@ -219,13 +202,35 @@
 
 - (instancetype)initWithDirectoryURL:(NSURL *)url
                              options:(DVECLevelDBOptions *)options
-                               error:(NSError **)error {
+                        formatLogger:(id<DVECLevelDBFormatLogger>)formatLogger
+                       keyComparator:(nullable id<DVECLevelDBKeyComparator>)keyComparator
+                        filterPolicy:(nullable id<DVECLevelDBFilterPolicy>)filterPolicy
+                   lruBlockCacheSize:(size_t)lruBlockCacheSize
+                               error:(NSError **)error
+{
+    leveldb::Logger *loggerFacade = [DVECLevelDBOptions createFormatLoggerFacade:formatLogger];
+
+    leveldb::Comparator *keyComparatorFacade = nil;
+    if (keyComparator != nil) {
+        keyComparatorFacade = new DVECLevelDBComparatorFacade(keyComparator);
+    }
+
+    leveldb::FilterPolicy *filterPolicyFacade = nil;
+    if (filterPolicy != nil) {
+        filterPolicyFacade = new DVECLevelDBFilterPolicyFacade(filterPolicy);
+    }
+
+    leveldb::Cache *blockCache = nil;
+    if (lruBlockCacheSize > 0) {
+        blockCache = leveldb::NewLRUCache(lruBlockCacheSize);
+    }
+
     return [self initWithDirectoryURL:url
                               options:options
-                               logger:nil
-                        keyComparator:nil
-                         filterPolicy:nil
-                           blockCache:nil
+                               logger:loggerFacade
+                        keyComparator:keyComparatorFacade
+                         filterPolicy:filterPolicyFacade
+                           blockCache:blockCache
                                 error:error];
 }
 
@@ -258,10 +263,9 @@
     [super setValue:value forKey:key];
 }
 
-- (NSString *)valueForKey:(NSString *)key options:(DVECLevelDBReadOptions *)options error:(NSError **)error {
+- (NSData *)dataForKey:(NSData *)key options:(DVECLevelDBReadOptions *)options error:(NSError **)error {
     std::string value;
-    leveldb::Slice levelDbKey([key UTF8String]);
-
+    leveldb::Slice levelDbKey = sliceForData(key);
     leveldb::Status status = self.db->Get(*(options.options), levelDbKey, &value);
 
     NSError *levelDBError = [NSError createFromLevelDBStatus:status];
@@ -272,21 +276,20 @@
         return nil;
     }
 
-    return [[NSString alloc] initWithBytes:value.data() length:value.length() encoding:NSUTF8StringEncoding];
+    return [[NSData alloc] initWithBytes:value.data() length:value.length()];
 }
 
-- (NSString *)valueForKey:(NSString *)key error:(NSError **)error {
-    return [self valueForKey:key options:[DVECLevelDBReadOptions new] error:error];
+- (NSData *)dataForKey:(NSData *)key error:(NSError **)error {
+    return [self dataForKey:key options:[DVECLevelDBReadOptions new] error:error];
 }
 
-- (BOOL)setValue:(NSString *)value forKey:(NSString *)key options:(DVECLevelDBWriteOptions *)options error:(NSError **)error {
-    if (value == nil) {
+- (BOOL)setData:(NSData *)data forKey:(NSData *)key options:(DVECLevelDBWriteOptions *)options error:(NSError **)error {
+    if (data == nil) {
         return [self removeValueForKey:key options:options error:error];
     }
 
-    leveldb::Slice levelDbKey([key UTF8String]);
-    NSData *valueData = [value dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
-    leveldb::Slice levelDbValue((const char *)valueData.bytes, valueData.length);
+    leveldb::Slice levelDbKey = sliceForData(key);
+    leveldb::Slice levelDbValue = sliceForData(data);
 
     leveldb::Status status = self.db->Put(*(options.options), levelDbKey, levelDbValue);
 
@@ -300,16 +303,16 @@
     return YES;
 }
 
-- (BOOL)setValue:(NSString *)value forKey:(NSString *)key error:(NSError **)error {
-    return [self setValue:value forKey:key options:[DVECLevelDBWriteOptions new] error:error];
+- (BOOL)setData:(NSData *)data forKey:(NSData *)key error:(NSError **)error {
+    return [self setData:data forKey:key options:[DVECLevelDBWriteOptions new] error:error];
 }
 
-- (BOOL)syncSetValue:(NSString *)value forKey:(NSString *)key error:(NSError **)error {
-    return [self setValue:value forKey:key options:self.syncWriteOptions error:error];
+- (BOOL)syncSetData:(NSData *)data forKey:(NSData *)key error:(NSError **)error {
+    return [self setData:data forKey:key options:self.syncWriteOptions error:error];
 }
 
-- (BOOL)removeValueForKey:(NSString *)key options:(DVECLevelDBWriteOptions *)options error:(NSError **)error {
-    leveldb::Slice levelDbKey([key UTF8String]);
+- (BOOL)removeValueForKey:(NSData *)key options:(DVECLevelDBWriteOptions *)options error:(NSError **)error {
+    leveldb::Slice levelDbKey = sliceForData(key);
 
     leveldb::Status status = self.db->Delete(*(options.options), levelDbKey);
     
@@ -323,17 +326,17 @@
     return YES;
 }
 
-- (BOOL)removeValueForKey:(NSString *)key error:(NSError **)error {
+- (BOOL)removeValueForKey:(NSData *)key error:(NSError **)error {
     return [self removeValueForKey:key options:[DVECLevelDBWriteOptions new] error:error];
 }
 
-- (BOOL)syncRemoveValueForKey:(NSString *)key error:(NSError **)error {
+- (BOOL)syncRemoveValueForKey:(NSData *)key error:(NSError **)error {
     return [self removeValueForKey:key options:self.syncWriteOptions error:error];
 }
 
-- (NSString *)objectForKeyedSubscript:(NSString *)key {
+- (NSData *)objectForKeyedSubscript:(NSData *)key {
     NSError *error = nil;
-    NSString *value = [self valueForKey:key error:&error];
+    NSData *data = [self dataForKey:key error:&error];
 
     if (error != nil) {
         if (error.domain == DVECLevelDBErrorDomain && error.code == DVECLevelDBErrorNotFound) {
@@ -342,23 +345,23 @@
             [[self class] raiseCriticalExceptionForError:error key:key];
         }
     }
-    return value;
+    return data;
 }
 
-- (void)setObject:(NSString *)obj forKeyedSubscript:(NSString *)key {
+- (void)setObject:(NSData *)obj forKeyedSubscript:(NSData *)key {
     if (obj == nil) {
         [NSException raise:NSInvalidArgumentException format:@"Cannot set %@ to 'nil' value", key];
     }
 
     NSError *error = nil;
-    [self setValue:obj forKey:key error:&error];
+    [self setData:obj forKey:key error:&error];
 
     if (error != nil) {
         [[self class] raiseCriticalExceptionForError:error key:key];
     }
 }
 
-- (NSEnumerator<NSString *>*)keyEnumerator {
+- (NSEnumerator<NSData *>*)keyEnumerator {
     return [[DVECLevelDBKeyEnumerator alloc] initWithDB:self reverse:NO options:[DVECLevelDBReadOptions new]];
 }
 
