@@ -52,15 +52,11 @@ NS_SWIFT_NAME(CLevelDB.ReadOptions)
 @property (nonatomic) BOOL verifyChecksums;
 @property (nonatomic) BOOL fillCache;
 @property (nonatomic, strong, nullable) DVECLevelDBSnapshot *snapshot;
-
-+ (instancetype)DVECLevelDBReadOptionsWithVerifyChecksums:(BOOL)verifyChecksums fillCache:(BOOL)fillCache;
 @end
 
 NS_SWIFT_NAME(CLevelDB.WriteOptions)
 @interface DVECLevelDBWriteOptions: NSObject
 @property (nonatomic) BOOL syncWrite;
-
-+ (instancetype)DVECLevelDBWriteOptionsWithSyncWrite:(BOOL)syncWrite;
 @end
 
 NS_ASSUME_NONNULL_END

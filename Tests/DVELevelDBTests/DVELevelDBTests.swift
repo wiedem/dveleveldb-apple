@@ -23,12 +23,28 @@ final class DVELevelDBTests: XCTestCase {
     }
 
     func testVersion() {
-        XCTAssert(LevelDB.majorVersion == 1)
-        XCTAssert(LevelDB.minorVersion == 23)
+        XCTAssertEqual(LevelDB.majorVersion, 1, "Expected majorVersion to be \(1) but got \(LevelDB.majorVersion)")
+        XCTAssertEqual(LevelDB.minorVersion, 23, "Expected minorVersion to be \(23) but got \(LevelDB.minorVersion)")
+    }
+
+    func testRemoveKey() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        let key = "DataKey1".data(using: .utf8)!
+        let value = "DataValue1".data(using: .utf8)!
+
+        //
+        try levelDB.setValue(value, forKey: key)
+        let readValue1: Data? = try levelDB.value(for: key)
+        XCTAssertEqual(readValue1, value)
+
+        try levelDB.removeValue(forKey: key)
+        let readValue2: Data? = try levelDB.value(for: key)
+        XCTAssertNil(readValue2)
     }
 
     func testStringKeys() throws {
-        let levelDB = try LevelDB(directoryURL: directoryUrl, options: .default)
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
 
         //
         let dataValue = "DataValue1".data(using: .utf8)!
@@ -38,18 +54,23 @@ final class DVELevelDBTests: XCTestCase {
 
         //
         let value1: Data? = try levelDB.value(for: "DataKey1")
-        XCTAssert(value1 == dataValue)
+        XCTAssertEqual(value1, dataValue)
         let value1B: Data? = levelDB["DataKey1"]
-        XCTAssert(value1B == dataValue)
+        XCTAssertEqual(value1B, dataValue)
 
         let value2: String? = try levelDB.value(for: "StringKey1")
-        XCTAssert(value2 == "Value1")
+        XCTAssertEqual(value2, "Value1")
         let value2B: String? = levelDB["StringKey1"]
-        XCTAssert(value2B == "Value1")
+        XCTAssertEqual(value2B, "Value1")
+
+        //
+        try levelDB.removeValue(forKey: "DataKey1")
+        let value1C: Data? = levelDB["DataKey1"]
+        XCTAssertNil(value1C)
     }
 
     func testCodableValue() throws {
-        let levelDB = try LevelDB(directoryURL: directoryUrl, options: .default)
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
 
@@ -59,11 +80,80 @@ final class DVELevelDBTests: XCTestCase {
 
         //
         let decodedValue: [Int: String]? = try levelDB.value(for: "EncodedKey1", decoder: decoder)
-        XCTAssert(decodedValue == value)
+        XCTAssertEqual(decodedValue, value)
+    }
+
+    func testTransactions() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        //
+        let value1 = "DataValue1".data(using: .utf8)!
+        let value2 = "DataValue2".data(using: .utf8)!
+
+        try levelDB.transaction { transactions in
+            try transactions.setValue(value1, forKey: "Key1")
+            try transactions.setValue(value2, forKey: "Key2")
+            try transactions.removeValue(forKey: "Key1")
+        }
+
+        let value1B: Data? = levelDB["Key1"]
+        XCTAssertNil(value1B)
+
+        let value2B: Data? = levelDB["Key2"]
+        XCTAssertEqual(value2B, value2)
+    }
+
+    func testClearTransactions() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        //
+        try levelDB.setValue("Key1Value1", forKey: "Key1")
+
+        try levelDB.transaction { transactions in
+            try transactions.setValue("Key1Value2", forKey: "Key1")
+            try transactions.setValue("Key3Value1", forKey: "Key3")
+
+            transactions.clear()
+
+            try transactions.setValue("Key2Value1", forKey: "Key2")
+        }
+
+        let value1: String? = levelDB["Key1"]
+        XCTAssertEqual(value1, "Key1Value1")
+
+        let value2: String? = levelDB["Key3"]
+        XCTAssertNil(value2)
+
+        let value3: String? = levelDB["Key2"]
+        XCTAssertEqual(value3, "Key2Value1")
+    }
+
+    func testTransactionsWithFailure() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        //
+        try levelDB.setValue("Value1", forKey: "Key1")
+
+        do {
+            try levelDB.transaction { transactions in
+                try transactions.removeValue(forKey: "Key1")
+                throw TestError.noFailure
+            }
+        } catch TestError.noFailure {
+            //
+        }
+
+        let value: String? = levelDB["Key1"]
+        XCTAssertEqual(value, "Value1")
     }
 }
 
 extension DVELevelDBTests {
+    enum TestError: Error {
+        case noFailure
+        case failure
+    }
+
     class func createTemporaryDirectory() -> URL {
         let url = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         return try! fileManager.url(

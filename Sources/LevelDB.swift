@@ -58,15 +58,13 @@ open class LevelDB {
         }
     }
 
-    @discardableResult
-    public func transaction<Result>(
-        writeOptions: WriteOptions = .default,
-        _ operations: (WriteBatch) -> Result
-    ) throws -> Result {
-        let writeBatch = WriteBatch(db: cLevelDB)
-        let result = operations(writeBatch)
-        try writeBatch.write(with: writeOptions)
-        return result
+    public func removeValue<Key>(
+        forKey key: Key,
+        options: WriteOptions = .default
+    ) throws where Key: ContiguousBytes {
+        try key.withUnsafeData { keyData in
+            try cLevelDB.removeValue(forKey: keyData, options: options)
+        }
     }
 }
 
@@ -140,6 +138,17 @@ public extension LevelDB {
             throw CLevelDB.Error(.invalidArgument)
         }
         try setValue(valueData, forKey: keyData)
+    }
+
+    func removeValue<Key>(
+        forKey key: Key,
+        keyEncoding: String.Encoding = .utf8,
+        options: WriteOptions = .default
+    ) throws where Key: StringProtocol {
+        guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
+            throw CLevelDB.Error(.invalidArgument)
+        }
+        try removeValue(forKey: keyData)
     }
 }
 

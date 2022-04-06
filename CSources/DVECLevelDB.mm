@@ -50,13 +50,9 @@ void copyDataToString(NSData *data, std::string &string) {
 @property (nonatomic, assign) leveldb::Comparator *keyComparator;
 @property (nonatomic, assign) leveldb::FilterPolicy *filterPolicy;
 @property (nonatomic, assign) leveldb::Cache *blockCache;
-
-@property (nonatomic, strong) DVECLevelDBWriteOptions *syncWriteOptions;
 @end
 
 @implementation DVECLevelDB
-
-@synthesize syncWriteOptions = _syncWriteOptions;
 
 + (BOOL)destroyDbAtDirectoryURL:(NSURL *)url options:(DVECLevelDBOptions *)options error:(NSError **)error {
     leveldb::Options levelDBOptions = [options createDefaultLevelDBOptions];
@@ -234,13 +230,6 @@ void copyDataToString(NSData *data, std::string &string) {
                                 error:error];
 }
 
-- (DVECLevelDBWriteOptions *)syncWriteOptions {
-    if (!_syncWriteOptions) {
-        _syncWriteOptions = [DVECLevelDBWriteOptions DVECLevelDBWriteOptionsWithSyncWrite:YES];
-    }
-    return _syncWriteOptions;
-}
-
 - (void)dealloc {
     delete _db;
     _db = nil;
@@ -307,10 +296,6 @@ void copyDataToString(NSData *data, std::string &string) {
     return [self setData:data forKey:key options:[DVECLevelDBWriteOptions new] error:error];
 }
 
-- (BOOL)syncSetData:(NSData *)data forKey:(NSData *)key error:(NSError **)error {
-    return [self setData:data forKey:key options:self.syncWriteOptions error:error];
-}
-
 - (BOOL)removeValueForKey:(NSData *)key options:(DVECLevelDBWriteOptions *)options error:(NSError **)error {
     leveldb::Slice levelDbKey = sliceForData(key);
 
@@ -328,10 +313,6 @@ void copyDataToString(NSData *data, std::string &string) {
 
 - (BOOL)removeValueForKey:(NSData *)key error:(NSError **)error {
     return [self removeValueForKey:key options:[DVECLevelDBWriteOptions new] error:error];
-}
-
-- (BOOL)syncRemoveValueForKey:(NSData *)key error:(NSError **)error {
-    return [self removeValueForKey:key options:self.syncWriteOptions error:error];
 }
 
 - (NSData *)objectForKeyedSubscript:(NSData *)key {

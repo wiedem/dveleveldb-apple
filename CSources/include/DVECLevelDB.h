@@ -55,11 +55,9 @@ __attribute__((objc_subclassing_restricted))
 
 - (BOOL)setData:(nullable NSData *)data forKey:(NSData *)key options:(DVECLevelDBWriteOptions *)options error:(NSError *_Nullable *_Nullable)error;
 - (BOOL)setData:(nullable NSData *)data forKey:(NSData *)key error:(NSError *_Nullable *_Nullable)error;
-- (BOOL)syncSetData:(nullable NSData *)data forKey:(NSData *)key error:(NSError *_Nullable *_Nullable)error;
 
 - (BOOL)removeValueForKey:(NSData *)key options:(DVECLevelDBWriteOptions *)options error:(NSError *_Nullable *_Nullable)error;
 - (BOOL)removeValueForKey:(NSData *)key error:(NSError *_Nullable *_Nullable)error;
-- (BOOL)syncRemoveValueForKey:(NSData *)key error:(NSError *_Nullable *_Nullable)error;
 
 - (nullable NSData *)objectForKeyedSubscript:(NSData *)key;
 - (void)setObject:(NSData *)obj forKeyedSubscript:(NSData *)key;

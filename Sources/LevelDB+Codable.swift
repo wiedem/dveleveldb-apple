@@ -67,6 +67,6 @@ public extension LevelDB {
             throw CLevelDB.Error(.invalidArgument)
         }
         let valueData = try encoder.encode(value)
-        try setValue(valueData, forKey: keyData)
+        try setValue(valueData, forKey: keyData, options: options)
     }
 }

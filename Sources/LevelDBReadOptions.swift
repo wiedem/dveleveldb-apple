@@ -7,8 +7,10 @@ import Foundation
 public extension CLevelDB.ReadOptions {
     static let `default` = CLevelDB.ReadOptions()
 
-    static func optionsWithSnapshot(_ snapshot: CLevelDB.Snapshot) -> CLevelDB.ReadOptions {
+    static func options(verifyChecksums: Bool, fillCache: Bool, snapshot: CLevelDB.Snapshot? = nil) -> CLevelDB.ReadOptions {
         let options = CLevelDB.ReadOptions()
+        options.verifyChecksums = verifyChecksums
+        options.fillCache = fillCache
         options.snapshot = snapshot
         return options
     }
