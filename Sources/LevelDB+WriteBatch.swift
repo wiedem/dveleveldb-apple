@@ -4,20 +4,20 @@
 import DVELevelDB_ObjC
 import Foundation
 
-public protocol LevelDBTransactions: AnyObject {
+public protocol LevelDBWriteBatch: AnyObject {
     func setValue<Value, Key>(_ value: Value, forKey key: Key) where Key: ContiguousBytes, Value: ContiguousBytes
     func removeValue<Key>(forKey key: Key) where Key: ContiguousBytes
     func clear()
 }
 
-public extension LevelDBTransactions {
+public extension LevelDBWriteBatch {
     func setValue<Value, Key>(
         _ value: Value,
         forKey key: Key,
         keyEncoding: String.Encoding = .utf8
     ) throws where Key: StringProtocol, Value: ContiguousBytes {
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
+            throw LevelDB.Error(.invalidArgument)
         }
         setValue(value, forKey: keyData)
     }
@@ -29,20 +29,20 @@ public extension LevelDBTransactions {
     ) throws where Key: StringProtocol, Value: StringProtocol {
         guard let keyData = key.data(using: encoding, allowLossyConversion: false),
               let valueData = value.data(using: encoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
+            throw LevelDB.Error(.invalidArgument)
         }
         setValue(valueData, forKey: keyData)
     }
 
     func removeValue<Key>(forKey key: Key, keyEncoding: String.Encoding = .utf8) throws where Key: StringProtocol {
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
+            throw LevelDB.Error(.invalidArgument)
         }
         removeValue(forKey: keyData)
     }
 }
 
-public extension LevelDBTransactions {
+public extension LevelDBWriteBatch {
     func setValue<Value, Key, Encoder>(
         _ value: Value,
         forKey key: Key,
@@ -59,7 +59,7 @@ public extension LevelDBTransactions {
         encoder: Encoder
     ) throws where Key: StringProtocol, Value: Encodable, Encoder: LevelDBDataEncoder {
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
+            throw LevelDB.Error(.invalidArgument)
         }
         let valueData = try encoder.encode(value)
         setValue(valueData, forKey: keyData)
@@ -68,9 +68,9 @@ public extension LevelDBTransactions {
 
 public extension LevelDB {
     @discardableResult
-    func transaction<Result>(
+    func writeBatch<Result>(
         writeOptions: WriteOptions = .default,
-        _ operations: (LevelDBTransactions) throws -> Result
+        _ operations: (LevelDBWriteBatch) throws -> Result
     ) throws -> Result {
         let writeBatch = WriteBatch(db: cLevelDB)
         let result = try operations(writeBatch)
@@ -79,7 +79,7 @@ public extension LevelDB {
     }
 }
 
-extension CLevelDB.WriteBatch: LevelDBTransactions {
+extension CLevelDB.WriteBatch: LevelDBWriteBatch {
     public func setValue<Value, Key>(
         _ value: Value,
         forKey key: Key

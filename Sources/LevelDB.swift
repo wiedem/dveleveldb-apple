@@ -12,9 +12,9 @@ open class LevelDB {
     public typealias ReadOptions = CLevelDB.ReadOptions
     public typealias WriteOptions = CLevelDB.WriteOptions
     public typealias WriteBatch = CLevelDB.WriteBatch
+    public typealias Error = CLevelDB.Error
 
-    public class var majorVersion: Int32 { CLevelDB.majorVersion }
-    public class var minorVersion: Int32 { CLevelDB.minorVersion }
+    public static let version: (major: Int32, minor: Int32) = (CLevelDB.majorVersion, CLevelDB.minorVersion)
 
     let cLevelDB: CLevelDB
 
@@ -66,6 +66,14 @@ open class LevelDB {
             try cLevelDB.removeValue(forKey: keyData, options: options)
         }
     }
+
+    subscript<Key>(key: Key, options: ReadOptions = .default) -> Data? where Key: ContiguousBytes {
+        do {
+            return try value(for: key, options: options)
+        } catch {
+            fatalError("Error getting value from DB: \(error)")
+        }
+    }
 }
 
 public extension LevelDB {
@@ -85,70 +93,6 @@ public extension LevelDB {
             lruBlockCacheSize: lruBlockCacheSize,
             logger: LevelDBBlockLogger(logger)
         )
-    }
-
-    func value<Key>(
-        for key: Key,
-        keyEncoding: String.Encoding = .utf8,
-        options: ReadOptions = .default
-    ) throws -> Data? where Key: StringProtocol {
-        guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
-        }
-        return try value(for: keyData)
-    }
-
-    func value<Key>(
-        for key: Key,
-        encoding: String.Encoding = .utf8,
-        options: ReadOptions = .default
-    ) throws -> String? where Key: StringProtocol {
-        guard let keyData = key.data(using: encoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
-        }
-        guard let valueData = try value(for: keyData, options: options) else {
-            return nil
-        }
-        guard let value = String(data: valueData, encoding: encoding) else {
-            throw CLevelDB.Error(.invalidType)
-        }
-        return value
-    }
-
-    func setValue<Value, Key>(
-        _ value: Value,
-        forKey key: Key,
-        keyEncoding: String.Encoding = .utf8,
-        options: WriteOptions = .default
-    ) throws where Key: StringProtocol, Value: ContiguousBytes {
-        guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
-        }
-        try setValue(value, forKey: keyData)
-    }
-
-    func setValue<Value, Key>(
-        _ value: Value,
-        forKey key: Key,
-        encoding: String.Encoding = .utf8,
-        options: WriteOptions = .default
-    ) throws where Key: StringProtocol, Value: StringProtocol {
-        guard let keyData = key.data(using: encoding, allowLossyConversion: false),
-              let valueData = value.data(using: encoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
-        }
-        try setValue(valueData, forKey: keyData)
-    }
-
-    func removeValue<Key>(
-        forKey key: Key,
-        keyEncoding: String.Encoding = .utf8,
-        options: WriteOptions = .default
-    ) throws where Key: StringProtocol {
-        guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
-        }
-        try removeValue(forKey: keyData)
     }
 }
 

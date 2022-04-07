@@ -23,8 +23,8 @@ final class DVELevelDBTests: XCTestCase {
     }
 
     func testVersion() {
-        XCTAssertEqual(LevelDB.majorVersion, 1, "Expected majorVersion to be \(1) but got \(LevelDB.majorVersion)")
-        XCTAssertEqual(LevelDB.minorVersion, 23, "Expected minorVersion to be \(23) but got \(LevelDB.minorVersion)")
+        XCTAssertEqual(LevelDB.version.major, 1, "Expected majorVersion to be \(1) but got \(LevelDB.version.major)")
+        XCTAssertEqual(LevelDB.version.minor, 23, "Expected minorVersion to be \(23) but got \(LevelDB.version.minor)")
     }
 
     func testRemoveKey() throws {
@@ -69,7 +69,26 @@ final class DVELevelDBTests: XCTestCase {
         XCTAssertNil(value1C)
     }
 
-    func testCodableValue() throws {
+    func testLosslessStringConvertibleValues() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        try levelDB.setValue(1, forKey: "Key1")
+        try levelDB.setValue(2.0, forKey: "Key2")
+        try levelDB.setValue("S", forKey: "Key3")
+
+        let value1: Int? = try levelDB.value(for: "Key1")
+        XCTAssertEqual(value1, 1)
+        let value1B: Int? = levelDB["Key1"]
+        XCTAssertEqual(value1B, 1)
+
+        let value2: Double? = try levelDB.value(for: "Key2")
+        XCTAssertEqual(value2, 2.0)
+
+        let value3: String? = try levelDB.value(for: "Key3")
+        XCTAssertEqual(value3, "S")
+    }
+
+    func testCodableValues() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
@@ -83,17 +102,17 @@ final class DVELevelDBTests: XCTestCase {
         XCTAssertEqual(decodedValue, value)
     }
 
-    func testTransactions() throws {
+    func testWriteBatch() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
 
         //
         let value1 = "DataValue1".data(using: .utf8)!
         let value2 = "DataValue2".data(using: .utf8)!
 
-        try levelDB.transaction { transactions in
-            try transactions.setValue(value1, forKey: "Key1")
-            try transactions.setValue(value2, forKey: "Key2")
-            try transactions.removeValue(forKey: "Key1")
+        try levelDB.writeBatch { batch in
+            try batch.setValue(value1, forKey: "Key1")
+            try batch.setValue(value2, forKey: "Key2")
+            try batch.removeValue(forKey: "Key1")
         }
 
         let value1B: Data? = levelDB["Key1"]
@@ -103,19 +122,19 @@ final class DVELevelDBTests: XCTestCase {
         XCTAssertEqual(value2B, value2)
     }
 
-    func testClearTransactions() throws {
+    func testClearWriteBatch() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
 
         //
         try levelDB.setValue("Key1Value1", forKey: "Key1")
 
-        try levelDB.transaction { transactions in
-            try transactions.setValue("Key1Value2", forKey: "Key1")
-            try transactions.setValue("Key3Value1", forKey: "Key3")
+        try levelDB.writeBatch { batch in
+            try batch.setValue("Key1Value2", forKey: "Key1")
+            try batch.setValue("Key3Value1", forKey: "Key3")
 
-            transactions.clear()
+            batch.clear()
 
-            try transactions.setValue("Key2Value1", forKey: "Key2")
+            try batch.setValue("Key2Value1", forKey: "Key2")
         }
 
         let value1: String? = levelDB["Key1"]
@@ -128,15 +147,15 @@ final class DVELevelDBTests: XCTestCase {
         XCTAssertEqual(value3, "Key2Value1")
     }
 
-    func testTransactionsWithFailure() throws {
+    func testWriteBatchWithFailure() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
 
         //
         try levelDB.setValue("Value1", forKey: "Key1")
 
         do {
-            try levelDB.transaction { transactions in
-                try transactions.removeValue(forKey: "Key1")
+            try levelDB.writeBatch { batch in
+                try batch.removeValue(forKey: "Key1")
                 throw TestError.noFailure
             }
         } catch TestError.noFailure {
