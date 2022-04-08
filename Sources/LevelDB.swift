@@ -67,7 +67,7 @@ open class LevelDB {
         }
     }
 
-    subscript<Key>(key: Key, options: ReadOptions = .default) -> Data? where Key: ContiguousBytes {
+    public subscript<Key>(key: Key, options: ReadOptions = .default) -> Data? where Key: ContiguousBytes {
         do {
             return try value(for: key, options: options)
         } catch {
