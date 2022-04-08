@@ -74,6 +74,10 @@ open class LevelDB {
             fatalError("Error getting value from DB: \(error)")
         }
     }
+
+    public func compact() {
+        cLevelDB.compact()
+    }
 }
 
 public extension LevelDB {

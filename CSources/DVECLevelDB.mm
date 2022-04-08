@@ -352,4 +352,8 @@ void copyDataToString(NSData *data, std::string &string) {
     return [[DVECLevelDBKeyEnumerator alloc] initWithDB:self reverse:NO options:[DVECLevelDBReadOptions new]];
 }
 
+- (void)compact {
+    self.db->CompactRange(nil, nil);
+}
+
 @end
