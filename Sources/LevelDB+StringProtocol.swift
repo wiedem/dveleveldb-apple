@@ -12,7 +12,7 @@ public extension LevelDB {
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
             throw Error(.invalidArgument)
         }
-        return try value(forKey: keyData)
+        return try value(forKey: keyData, options: options)
     }
 
     func setValue<Value, Key>(
@@ -24,7 +24,7 @@ public extension LevelDB {
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
             throw Error(.invalidArgument)
         }
-        try setValue(value, forKey: keyData)
+        try setValue(value, forKey: keyData, options: options)
     }
 
     func removeValue<Key>(
@@ -35,7 +35,7 @@ public extension LevelDB {
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
             throw Error(.invalidArgument)
         }
-        try removeValue(forKey: keyData)
+        try removeValue(forKey: keyData, options: options)
     }
 
     subscript<Key>(
