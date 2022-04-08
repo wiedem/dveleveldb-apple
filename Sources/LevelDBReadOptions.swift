@@ -14,4 +14,10 @@ public extension CLevelDB.ReadOptions {
         options.snapshot = snapshot
         return options
     }
+
+    static func usingSnapshot(_ snapshot: CLevelDB.Snapshot) -> CLevelDB.ReadOptions {
+        let options = CLevelDB.ReadOptions()
+        options.snapshot = snapshot
+        return options
+    }
 }

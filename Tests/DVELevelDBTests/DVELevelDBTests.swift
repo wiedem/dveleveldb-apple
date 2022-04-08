@@ -198,6 +198,29 @@ final class DVELevelDBTests: XCTestCase {
         XCTAssertEqual(value2, "Value2")
     }
 
+    func testReadWithSnapshot() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        try levelDB.setValue("Value1", forKey: "A1")
+        try levelDB.setValue("Value2", forKey: "B1")
+        try levelDB.setValue("Value3", forKey: "C1")
+
+        let snapshot = levelDB.createSnapshot()
+
+        try levelDB.setValue("Value2B", forKey: "B1")
+        try levelDB.removeValue(forKey: "C1")
+        try levelDB.setValue("Value4", forKey: "D1")
+
+        let value1: String? = try levelDB.value(forKey: "A1", options: .usingSnapshot(snapshot))
+        XCTAssertEqual(value1, "Value1")
+        let value2: String? = try levelDB.value(forKey: "B1", options: .usingSnapshot(snapshot))
+        XCTAssertEqual(value2, "Value2")
+        let value3: String? = try levelDB.value(forKey: "C1", options: .usingSnapshot(snapshot))
+        XCTAssertEqual(value3, "Value3")
+        let value4: String? = try levelDB.value(forKey: "D1", options: .usingSnapshot(snapshot))
+        XCTAssertNil(value4)
+    }
+
     func testCompact() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
 

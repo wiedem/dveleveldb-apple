@@ -6,6 +6,7 @@ import Foundation
 
 open class LevelDB {
     public typealias Options = CLevelDB.Options
+    public typealias Snapshot = CLevelDB.Snapshot
     public typealias Logger = CLevelDB.Logger
     public typealias KeyComparator = CLevelDB.BlockKeyComparator
     public typealias FilterPolicy = CLevelDB.FilterPolicy
@@ -97,6 +98,10 @@ open class LevelDB {
                 cLevelDB.compact(withStartKey: startKeyData, endKey: endKeyData)
             }
         }
+    }
+
+    public func createSnapshot() -> Snapshot {
+        .init(db: cLevelDB)
     }
 }
 
