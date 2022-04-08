@@ -76,7 +76,27 @@ open class LevelDB {
     }
 
     public func compact() {
-        cLevelDB.compact()
+        cLevelDB.compact(withStartKey: nil, endKey: nil)
+    }
+
+    public func compact<Key>(startKey: Key) where Key: ContiguousBytes {
+        startKey.withUnsafeData { startKeyData in
+            cLevelDB.compact(withStartKey: startKeyData, endKey: nil)
+        }
+    }
+
+    public func compact<Key>(endKey: Key) where Key: ContiguousBytes {
+        endKey.withUnsafeData { endKeyData in
+            cLevelDB.compact(withStartKey: nil, endKey: endKeyData)
+        }
+    }
+
+    public func compact<Key>(startKey: Key, endKey: Key) where Key: ContiguousBytes {
+        startKey.withUnsafeData { startKeyData in
+            endKey.withUnsafeData { endKeyData in
+                cLevelDB.compact(withStartKey: startKeyData, endKey: endKeyData)
+            }
+        }
     }
 }
 

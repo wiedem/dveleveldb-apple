@@ -197,6 +197,46 @@ final class DVELevelDBTests: XCTestCase {
         let value2: String? = try levelDB.value(forKey: "B1")
         XCTAssertEqual(value2, "Value2")
     }
+
+    func testCompact() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        try levelDB.setValue("Value1", forKey: "A1")
+        try levelDB.setValue("Value2", forKey: "B1")
+        try levelDB.setValue("Value3", forKey: "C1")
+
+        levelDB.compact()
+    }
+
+    func testCompactWithStartKey() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        try levelDB.setValue("Value1", forKey: "A1")
+        try levelDB.setValue("Value2", forKey: "B1")
+        try levelDB.setValue("Value3", forKey: "C1")
+
+        try levelDB.compact(startKey: "B1")
+    }
+
+    func testCompactWithEndKey() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        try levelDB.setValue("Value1", forKey: "A1")
+        try levelDB.setValue("Value2", forKey: "B1")
+        try levelDB.setValue("Value3", forKey: "C1")
+
+        try levelDB.compact(endKey: "B1")
+    }
+
+    func testCompactWithStartAndEndKey() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        try levelDB.setValue("Value1", forKey: "A1")
+        try levelDB.setValue("Value2", forKey: "B1")
+        try levelDB.setValue("Value3", forKey: "C1")
+
+        try levelDB.compact(startKey: "A1", endKey: "B1")
+    }
 }
 
 extension String {

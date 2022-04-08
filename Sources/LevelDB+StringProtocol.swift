@@ -49,4 +49,26 @@ public extension LevelDB {
             fatalError("Error getting value from DB: \(error)")
         }
     }
+
+    func compact<Key>(startKey: Key, keyEncoding: String.Encoding = .utf8) throws where Key: StringProtocol {
+        guard let keyData = startKey.data(using: keyEncoding, allowLossyConversion: false) else {
+            throw Error(.invalidArgument)
+        }
+        compact(startKey: keyData)
+    }
+
+    func compact<Key>(endKey: Key, keyEncoding: String.Encoding = .utf8) throws where Key: StringProtocol {
+        guard let keyData = endKey.data(using: keyEncoding, allowLossyConversion: false) else {
+            throw Error(.invalidArgument)
+        }
+        compact(endKey: keyData)
+    }
+
+    func compact<Key>(startKey: Key, endKey: Key, keyEncoding: String.Encoding = .utf8) throws where Key: StringProtocol {
+        guard let startKeyData = startKey.data(using: keyEncoding, allowLossyConversion: false),
+              let endKeyData = endKey.data(using: keyEncoding, allowLossyConversion: false) else {
+            throw Error(.invalidArgument)
+        }
+        compact(startKey: startKeyData, endKey: endKeyData)
+    }
 }

@@ -64,7 +64,7 @@ __attribute__((objc_subclassing_restricted))
 
 - (NSEnumerator<NSData *>*)keyEnumerator;
 
-- (void)compact;
+- (void)compactWithStartKey:(nullable NSData *)startKey endKey:(nullable NSData *)endKey;
 
 - (id)valueForKey:(NSString *)key KVC_SWIFT_UNAVAILABLE;
 - (void)setValue:(nullable id)value forKey:(NSString *)key KVC_SWIFT_UNAVAILABLE;

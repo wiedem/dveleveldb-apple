@@ -352,8 +352,20 @@ void copyDataToString(NSData *data, std::string &string) {
     return [[DVECLevelDBKeyEnumerator alloc] initWithDB:self reverse:NO options:[DVECLevelDBReadOptions new]];
 }
 
-- (void)compact {
-    self.db->CompactRange(nil, nil);
+- (void)compactWithStartKey:(NSData *)startKey endKey:(NSData *)endKey {
+    leveldb::Slice *start = nil;
+    leveldb::Slice *end = nil;
+
+    if (startKey != nil) {
+        start = new leveldb::Slice((const char *)startKey.bytes, startKey.length);
+    }
+    if (endKey != nil) {
+        end = new leveldb::Slice((const char *)endKey.bytes, endKey.length);
+    }
+    self.db->CompactRange(start, end);
+
+    delete start;
+    delete end;
 }
 
 @end
