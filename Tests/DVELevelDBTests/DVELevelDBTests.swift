@@ -35,11 +35,11 @@ final class DVELevelDBTests: XCTestCase {
 
         //
         try levelDB.setValue(value, forKey: key)
-        let readValue1: Data? = try levelDB.value(for: key)
+        let readValue1: Data? = try levelDB.value(forKey: key)
         XCTAssertEqual(readValue1, value)
 
         try levelDB.removeValue(forKey: key)
-        let readValue2: Data? = try levelDB.value(for: key)
+        let readValue2: Data? = try levelDB.value(forKey: key)
         XCTAssertNil(readValue2)
     }
 
@@ -53,12 +53,12 @@ final class DVELevelDBTests: XCTestCase {
         try levelDB.setValue("Value1", forKey: "StringKey1")
 
         //
-        let value1: Data? = try levelDB.value(for: "DataKey1")
+        let value1: Data? = try levelDB.value(forKey: "DataKey1")
         XCTAssertEqual(value1, dataValue)
         let value1B: Data? = levelDB["DataKey1"]
         XCTAssertEqual(value1B, dataValue)
 
-        let value2: String? = try levelDB.value(for: "StringKey1")
+        let value2: String? = try levelDB.value(forKey: "StringKey1")
         XCTAssertEqual(value2, "Value1")
         let value2B: String? = levelDB["StringKey1"]
         XCTAssertEqual(value2B, "Value1")
@@ -76,15 +76,15 @@ final class DVELevelDBTests: XCTestCase {
         try levelDB.setValue(2.0, forKey: "Key2")
         try levelDB.setValue("S", forKey: "Key3")
 
-        let value1: Int? = try levelDB.value(for: "Key1")
+        let value1: Int? = try levelDB.value(forKey: "Key1")
         XCTAssertEqual(value1, 1)
         let value1B: Int? = levelDB["Key1"]
         XCTAssertEqual(value1B, 1)
 
-        let value2: Double? = try levelDB.value(for: "Key2")
+        let value2: Double? = try levelDB.value(forKey: "Key2")
         XCTAssertEqual(value2, 2.0)
 
-        let value3: String? = try levelDB.value(for: "Key3")
+        let value3: String? = try levelDB.value(forKey: "Key3")
         XCTAssertEqual(value3, "S")
     }
 
@@ -98,7 +98,7 @@ final class DVELevelDBTests: XCTestCase {
         try levelDB.setValue(value, forKey: "EncodedKey1", encoder: encoder)
 
         //
-        let decodedValue: [Int: String]? = try levelDB.value(for: "EncodedKey1", decoder: decoder)
+        let decodedValue: [Int: String]? = try levelDB.value(forKey: "EncodedKey1", decoder: decoder)
         XCTAssertEqual(decodedValue, value)
     }
 
@@ -192,9 +192,9 @@ final class DVELevelDBTests: XCTestCase {
         // Compact will cause outstanding write operations to be performed and the key comparator to be called.
         levelDB.compact()
 
-        let value1: String? = try levelDB.value(for: "A1")
+        let value1: String? = try levelDB.value(forKey: "A1")
         XCTAssertEqual(value1, "Value1")
-        let value2: String? = try levelDB.value(for: "B1")
+        let value2: String? = try levelDB.value(forKey: "B1")
         XCTAssertEqual(value2, "Value2")
     }
 }

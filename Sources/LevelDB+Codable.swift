@@ -19,11 +19,11 @@ extension PropertyListEncoder: LevelDBDataEncoder {}
 
 public extension LevelDB {
     func value<Key, Value, Decoder>(
-        for key: Key,
+        forKey key: Key,
         decoder: Decoder,
         options: ReadOptions = .default
     ) throws -> Value? where Key: ContiguousBytes, Value: Decodable, Decoder: LevelDBDataDecoder {
-        guard let valueData = try value(for: key, options: options) else {
+        guard let valueData = try value(forKey: key, options: options) else {
             return nil
         }
         return try decoder.decode(Value.self, from: valueData)
@@ -42,7 +42,7 @@ public extension LevelDB {
 
 public extension LevelDB {
     func value<Key, Value, Decoder>(
-        for key: Key,
+        forKey key: Key,
         keyEncoding: String.Encoding = .utf8,
         decoder: Decoder,
         options: ReadOptions = .default
@@ -50,7 +50,7 @@ public extension LevelDB {
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
             throw CLevelDB.Error(.invalidArgument)
         }
-        guard let valueData = try value(for: keyData, options: options) else {
+        guard let valueData = try value(forKey: keyData, options: options) else {
             return nil
         }
         return try decoder.decode(Value.self, from: valueData)

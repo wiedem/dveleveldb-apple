@@ -36,7 +36,7 @@ open class LevelDB {
         )
     }
 
-    public func value<Key>(for key: Key, options: ReadOptions = .default) throws -> Data? where Key: ContiguousBytes {
+    public func value<Key>(forKey key: Key, options: ReadOptions = .default) throws -> Data? where Key: ContiguousBytes {
         do {
             return try key.withUnsafeData { keyData in
                 try cLevelDB.data(forKey: keyData, options: options)
@@ -69,7 +69,7 @@ open class LevelDB {
 
     public subscript<Key>(key: Key, options: ReadOptions = .default) -> Data? where Key: ContiguousBytes {
         do {
-            return try value(for: key, options: options)
+            return try value(forKey: key, options: options)
         } catch {
             fatalError("Error getting value from DB: \(error)")
         }

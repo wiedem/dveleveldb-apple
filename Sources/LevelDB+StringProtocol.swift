@@ -5,14 +5,14 @@ import Foundation
 
 public extension LevelDB {
     func value<Key>(
-        for key: Key,
+        forKey key: Key,
         keyEncoding: String.Encoding = .utf8,
         options: ReadOptions = .default
     ) throws -> Data? where Key: StringProtocol {
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
             throw Error(.invalidArgument)
         }
-        return try value(for: keyData)
+        return try value(forKey: keyData)
     }
 
     func setValue<Value, Key>(
@@ -44,7 +44,7 @@ public extension LevelDB {
         options: ReadOptions = .default
     ) -> Data? where Key: StringProtocol {
         do {
-            return try value(for: key, keyEncoding: keyEncoding, options: options)
+            return try value(forKey: key, keyEncoding: keyEncoding, options: options)
         } catch {
             fatalError("Error getting value from DB: \(error)")
         }

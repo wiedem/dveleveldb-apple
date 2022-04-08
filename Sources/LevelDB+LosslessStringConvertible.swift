@@ -5,11 +5,11 @@ import Foundation
 
 public extension LevelDB {
     func value<Key, Value>(
-        for key: Key,
+        forKey key: Key,
         encoding: String.Encoding = .utf8,
         options: ReadOptions = .default
     ) throws -> Value? where Key: StringProtocol, Value: LosslessStringConvertible {
-        guard let valueData: Data = try value(for: key, keyEncoding: encoding, options: options) else {
+        guard let valueData: Data = try value(forKey: key, keyEncoding: encoding, options: options) else {
             return nil
         }
 
