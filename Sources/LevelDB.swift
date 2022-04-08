@@ -7,7 +7,7 @@ import Foundation
 open class LevelDB {
     public typealias Options = CLevelDB.Options
     public typealias Logger = CLevelDB.Logger
-    public typealias KeyComparator = CLevelDB.KeyComparator
+    public typealias KeyComparator = CLevelDB.BlockKeyComparator
     public typealias FilterPolicy = CLevelDB.FilterPolicy
     public typealias ReadOptions = CLevelDB.ReadOptions
     public typealias WriteOptions = CLevelDB.WriteOptions

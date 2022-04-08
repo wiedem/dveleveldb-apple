@@ -165,6 +165,49 @@ final class DVELevelDBTests: XCTestCase {
         let value: String? = levelDB["Key1"]
         XCTAssertEqual(value, "Value1")
     }
+
+    func testKeyComparator() throws {
+        // A simple key comparator implementation for UTF-8 encoded string keys.
+        let keyComparator = LevelDB.KeyComparator(name: "Test") { key1, key2 in
+            // We simply compare the keys as strings.
+            let key1String = String(data: key1, encoding: .utf8)!
+            let key2String = String(data: key2, encoding: .utf8)!
+            return key1String.compare(key2String)
+        } findShortestSuccessor: { key in
+            // The method to search for the shortest successor
+            let keyString = String(data: key, encoding: .utf8)!
+            guard let asciiValue = keyString.first!.asciiValue else {
+                return nil
+            }
+            let nextAsciiValue = asciiValue < 255 ? asciiValue + 1 : asciiValue
+            let successorChar = Character(UnicodeScalar(nextAsciiValue))
+            return String(successorChar).data(using: .utf8, allowLossyConversion: false)
+        }
+
+        let levelDB = try LevelDB(directoryURL: directoryUrl, keyComparator: keyComparator)
+
+        try levelDB.setValue("Value1", forKey: "A1")
+        try levelDB.setValue("Value2", forKey: "B1")
+
+        // Compact will cause outstanding write operations to be performed and the key comparator to be called.
+        levelDB.compact()
+
+        let value1: String? = try levelDB.value(for: "A1")
+        XCTAssertEqual(value1, "Value1")
+        let value2: String? = try levelDB.value(for: "B1")
+        XCTAssertEqual(value2, "Value2")
+    }
+}
+
+extension String {
+    func compare(_ other: String) -> ComparisonResult {
+        if self == other {
+            return .orderedSame
+        } else if self < other {
+            return .orderedAscending
+        }
+        return .orderedDescending
+    }
 }
 
 extension DVELevelDBTests {

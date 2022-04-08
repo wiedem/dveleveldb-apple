@@ -6,11 +6,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NS_SWIFT_NAME(CLevelDB.KeyComparatorBlock)
 typedef NSComparisonResult (^DVECLevelDBKeyComparatorBlock)(NSData *lhs, NSData *rhs);
+NS_SWIFT_NAME(CLevelDB.KeyFindShortestSeparatorBlock)
+typedef NSData *_Nullable (^DVECLevelDBKeyFindShortestSeparatorBlock)(NSData *start, NSData *limit);
+NS_SWIFT_NAME(CLevelDB.KeyFindShortestSuccessorBlock)
+typedef NSData *_Nullable (^DVECLevelDBKeyFindShortestSuccessorBlock)(NSData *key);
 
 NS_SWIFT_NAME(CLevelDB.BlockKeyComparator)
 @interface DVECLevelDBBlockKeyComparator: NSObject<DVECLevelDBKeyComparator>
-- (instancetype)initWithName:(NSString *)name comparator:(DVECLevelDBKeyComparatorBlock)comparator;
+- (instancetype)initWithName:(NSString *)name
+                  comparator:(DVECLevelDBKeyComparatorBlock)comparator
+       findShortestSeparator:(nullable DVECLevelDBKeyFindShortestSeparatorBlock)findShortestSeparator
+       findShortestSuccessor:(nullable DVECLevelDBKeyFindShortestSuccessorBlock)findShortestSuccessor NS_REFINED_FOR_SWIFT;
 @end
 
 NS_ASSUME_NONNULL_END

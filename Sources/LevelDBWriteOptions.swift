@@ -7,9 +7,9 @@ import Foundation
 public extension CLevelDB.WriteOptions {
     static let `default` = CLevelDB.WriteOptions()
 
-    static func options(syncWrite: Bool) -> CLevelDB.WriteOptions {
+    static let useSyncWrite: CLevelDB.WriteOptions = {
         let options = CLevelDB.WriteOptions()
-        options.syncWrite = syncWrite
+        options.syncWrite = true
         return options
-    }
+    }()
 }

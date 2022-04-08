@@ -23,19 +23,25 @@ public:
     }
 
     const char* Name() const override { return [_comparator.name UTF8String]; }
+
     void FindShortestSeparator(std::string *start, const leveldb::Slice &limit) const override {
         if ([_comparator respondsToSelector:@selector(findShortestSeparator:limit:)]) {
             NSData *startData = dataForString(*start);
             NSData *limitData = dataForSlice(limit);
             NSData *newStartData = [_comparator findShortestSeparator:startData limit:limitData];
-            copyDataToString(newStartData, *start);
+            if (newStartData != nil) {
+                copyDataToString(newStartData, *start);
+            }
         }
     }
+    
     void FindShortSuccessor(std::string *key) const override {
         if ([_comparator respondsToSelector:@selector(findShortestSuccessor:)]) {
             NSData *keyData = dataForString(*key);
-            NSData *newKeyData = [_comparator findShortestSuccessor:newKeyData];
-            copyDataToString(newKeyData, *key);
+            NSData *newKeyData = [_comparator findShortestSuccessor:keyData];
+            if (newKeyData != nil) {
+                copyDataToString(newKeyData, *key);
+            }
         }
     }
 
