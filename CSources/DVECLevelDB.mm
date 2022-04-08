@@ -23,10 +23,16 @@ leveldb::Slice sliceForData(NSData *data) {
 }
 
 NSData *dataForSlice(const leveldb::Slice &slice) {
+    if (slice.size() == 0) {
+        return [NSData data];
+    }
     return [[NSData alloc] initWithBytesNoCopy:(void *)slice.data() length:slice.size() freeWhenDone:NO];
 }
 
 NSData *dataForString(const std::string &string) {
+    if (string.size() == 0) {
+        return [NSData data];
+    }
     return [[NSData alloc] initWithBytesNoCopy:(void *)string.data() length:string.size() freeWhenDone:NO];
 }
 
