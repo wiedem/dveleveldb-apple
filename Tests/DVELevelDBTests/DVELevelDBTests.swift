@@ -174,7 +174,7 @@ final class DVELevelDBTests: XCTestCase {
             let key2String = String(data: key2, encoding: .utf8)!
             return key1String.compare(key2String)
         } findShortestSuccessor: { key in
-            // The method to search for the shortest successor
+            // The method to search for the shortest successor.
             let keyString = String(data: key, encoding: .utf8)!
             guard let asciiValue = keyString.first!.asciiValue else {
                 return nil
