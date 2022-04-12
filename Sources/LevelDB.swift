@@ -67,15 +67,7 @@ open class LevelDB {
             try cLevelDB.removeValue(forKey: keyData, options: options)
         }
     }
-
-    public subscript<Key>(key: Key, options: ReadOptions = .default) -> Data? where Key: ContiguousBytes {
-        do {
-            return try value(forKey: key, options: options)
-        } catch {
-            fatalError("Error getting value from DB: \(error)")
-        }
-    }
-
+    
     public func compact() {
         cLevelDB.compact(withStartKey: nil, endKey: nil)
     }

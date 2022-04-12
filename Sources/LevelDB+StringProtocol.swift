@@ -38,18 +38,6 @@ public extension LevelDB {
         try removeValue(forKey: keyData, options: options)
     }
 
-    subscript<Key>(
-        key: Key,
-        keyEncoding: String.Encoding = .utf8,
-        options: ReadOptions = .default
-    ) -> Data? where Key: StringProtocol {
-        do {
-            return try value(forKey: key, keyEncoding: keyEncoding, options: options)
-        } catch {
-            fatalError("Error getting value from DB: \(error)")
-        }
-    }
-
     func compact<Key>(startKey: Key, keyEncoding: String.Encoding = .utf8) throws where Key: StringProtocol {
         guard let keyData = startKey.data(using: keyEncoding, allowLossyConversion: false) else {
             throw Error(.invalidArgument)
@@ -70,5 +58,19 @@ public extension LevelDB {
             throw Error(.invalidArgument)
         }
         compact(startKey: startKeyData, endKey: endKeyData)
+    }
+}
+
+public extension LevelDB {
+    subscript<Key>(
+        key: Key,
+        keyEncoding: String.Encoding = .utf8,
+        options: ReadOptions = .default
+    ) -> Data? where Key: StringProtocol {
+        do {
+            return try value(forKey: key, keyEncoding: keyEncoding, options: options)
+        } catch {
+            fatalError("Error getting value from DB: \(error)")
+        }
     }
 }

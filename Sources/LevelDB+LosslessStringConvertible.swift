@@ -32,7 +32,9 @@ public extension LevelDB {
 
         try setValue(valueData, forKey: key, keyEncoding: encoding, options: options)
     }
+}
 
+public extension LevelDB {
     subscript<Key, Value>(
         key: Key,
         encoding: String.Encoding = .utf8,
