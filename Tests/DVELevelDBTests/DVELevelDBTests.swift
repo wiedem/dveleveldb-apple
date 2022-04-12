@@ -27,6 +27,22 @@ final class DVELevelDBTests: XCTestCase {
         XCTAssertEqual(LevelDB.version.minor, 23, "Expected minorVersion to be \(23) but got \(LevelDB.version.minor)")
     }
 
+    func testDBProperties() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        let numFiles = levelDB.getDBProperty(.numFiles(level: 0))
+        XCTAssertNotNil(numFiles)
+
+        let stats = levelDB.getDBProperty(.stats)
+        XCTAssertNotNil(stats)
+
+        let ssTables = levelDB.getDBProperty(.ssTables)
+        XCTAssertNotNil(ssTables)
+
+        let approximateMemoryUsage = levelDB.getDBProperty(.approximateMemoryUsage)
+        XCTAssertNotNil(approximateMemoryUsage)
+    }
+
     func testRemoveKey() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
 

@@ -5,6 +5,13 @@ import DVELevelDB_ObjC
 import Foundation
 
 open class LevelDB {
+    public enum DBProperty {
+        case numFiles(level: UInt64)
+        case stats
+        case ssTables
+        case approximateMemoryUsage
+    }
+
     public typealias Options = CLevelDB.Options
     public typealias Snapshot = CLevelDB.Snapshot
     public typealias Logger = CLevelDB.Logger
@@ -35,6 +42,10 @@ open class LevelDB {
             filterPolicy: filterPolicy,
             lruBlockCacheSize: lruBlockCacheSize
         )
+    }
+
+    public func getDBProperty(_ property: DBProperty) -> String? {
+        return cLevelDB.dbProperty(forKey: property.key)
     }
 
     public func value<Key>(forKey key: Key, options: ReadOptions = .default) throws -> Data? where Key: ContiguousBytes {
@@ -128,6 +139,25 @@ public extension LevelDB {
 
     class func repairDb(at url: URL, options: Options, logger: @escaping (String) -> Void) throws {
         try CLevelDB.repair(atDirectoryURL: url, options: options, simpleLogger: LevelDBBlockLogger(logger))
+    }
+}
+
+public extension LevelDB.DBProperty {
+    static let keyPrefix = "leveldb."
+
+    var key: String {
+        let key: String
+        switch self {
+        case let .numFiles(level):
+            key = "num-files-at-level\(level)"
+        case .stats:
+            key = "stats"
+        case .ssTables:
+            key = "sstables"
+        case .approximateMemoryUsage:
+            key = "approximate-memory-usage"
+        }
+        return "\(Self.keyPrefix)\(key)"
     }
 }
 

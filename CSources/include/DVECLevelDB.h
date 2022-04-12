@@ -50,6 +50,8 @@ __attribute__((objc_subclassing_restricted))
                             lruBlockCacheSize:(size_t)lruBlockCacheSize
                                         error:(NSError *_Nullable *_Nullable)error;
 
+- (nullable NSString *)dbPropertyForKey:(NSString *)key;
+
 - (nullable NSData *)dataForKey:(NSData *)key options:(DVECLevelDBReadOptions *)options error:(NSError *_Nullable *_Nullable)error;
 - (nullable NSData *)dataForKey:(NSData *)key error:(NSError *_Nullable *_Nullable)error;
 

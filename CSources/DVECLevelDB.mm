@@ -258,6 +258,13 @@ void copyDataToString(NSData *data, std::string &string) {
     [super setValue:value forKey:key];
 }
 
+- (NSString *)dbPropertyForKey:(NSString *)key {
+    leveldb::Slice property = leveldb::Slice([key UTF8String]);
+    std::string value = std::string();
+    self.db->GetProperty(property, &value);
+    return [NSString stringWithUTF8String:value.c_str()];
+}
+
 - (NSData *)dataForKey:(NSData *)key options:(DVECLevelDBReadOptions *)options error:(NSError **)error {
     std::string value;
     leveldb::Slice levelDbKey = sliceForData(key);
