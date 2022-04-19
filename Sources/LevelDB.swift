@@ -126,6 +126,10 @@ public extension LevelDB {
             logger: LevelDBBlockLogger(logger)
         )
     }
+
+    func compact<Key>(range: Range<Key>) where Key: ContiguousBytes {
+        compact(startKey: range.lowerBound, endKey: range.upperBound)
+    }
 }
 
 public extension LevelDB {
