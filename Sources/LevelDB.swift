@@ -131,6 +131,14 @@ open class LevelDB {
     public func createSnapshot() -> Snapshot {
         .init(db: cLevelDB)
     }
+
+    public func forEach(_ body: ((key: Data, value: Data)) throws -> Void, options: ReadOptions = .default) throws {
+        for key in cLevelDB.keyEnumerator() {
+            let keyData = key as! Data
+            let value = try value(forKey: keyData)!
+            try body((key: keyData, value: value))
+        }
+    }
 }
 
 public extension LevelDB {

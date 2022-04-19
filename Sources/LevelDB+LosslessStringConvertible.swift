@@ -8,6 +8,22 @@ public extension LevelDB {
         forKey key: Key,
         encoding: String.Encoding = .utf8,
         options: ReadOptions = .default
+    ) throws -> Value? where Key: ContiguousBytes, Value: LosslessStringConvertible {
+        guard let valueData: Data = try value(forKey: key, options: options) else {
+            return nil
+        }
+
+        guard let valueString = String(data: valueData, encoding: encoding),
+              let value = Value(valueString) else {
+            throw Error(.invalidType)
+        }
+        return value
+    }
+
+    func value<Key, Value>(
+        forKey key: Key,
+        encoding: String.Encoding = .utf8,
+        options: ReadOptions = .default
     ) throws -> Value? where Key: StringProtocol, Value: LosslessStringConvertible {
         guard let valueData: Data = try value(forKey: key, keyEncoding: encoding, options: options) else {
             return nil
@@ -18,6 +34,19 @@ public extension LevelDB {
             throw Error(.invalidType)
         }
         return value
+    }
+
+    func setValue<Value, Key>(
+        _ value: Value,
+        forKey key: Key,
+        encoding: String.Encoding = .utf8,
+        options: WriteOptions = .default
+    ) throws where Key: ContiguousBytes, Value: LosslessStringConvertible {
+        guard let valueData = value.description.data(using: encoding, allowLossyConversion: false) else {
+            throw Error(.invalidArgument)
+        }
+
+        try setValue(valueData, forKey: key, options: options)
     }
 
     func setValue<Value, Key>(

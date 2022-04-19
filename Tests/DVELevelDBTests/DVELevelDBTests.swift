@@ -306,6 +306,27 @@ final class DVELevelDBTests: XCTestCase {
 
         try levelDB.compact(keyRange: "A1"..."B1")
     }
+
+    func testForEach() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        let key1 = Data([0x01])
+        let key2 = Data([0x02])
+
+        try levelDB.setValue("Value1", forKey: key1)
+        try levelDB.setValue("Value2", forKey: key2)
+
+        var processedEntries = 0
+        try levelDB.forEach { value, key in
+            processedEntries += 1
+            if key == key1 {
+                XCTAssert(value == "Value1".data(using: .utf8))
+            } else if key == key2 {
+                XCTAssert(value == "Value2".data(using: .utf8))
+            }
+        }
+        XCTAssertEqual(processedEntries, 2)
+    }
 }
 
 extension String {
