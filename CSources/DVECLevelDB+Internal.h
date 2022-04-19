@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 leveldb::Slice sliceForData(NSData *data);
 NSData *dataForString(const std::string &string);
 NSData *dataForSlice(const leveldb::Slice &slice);
+NSData *createDataForString(std::string &string);
 void copyDataToString(NSData *data, std::string &string);
 
 @interface DVECLevelDB(Internal)

@@ -12,6 +12,7 @@
 #import "DVECLevelDBWriteOptions+Internal.h"
 #import "DVECLevelDBKeyEnumerator.h"
 #import "DVECLevelDBKeyComparator.h"
+#import "DVECLevelDBInternalComparatorCaller.h"
 #import "DVECLevelDBError.h"
 #import "NSError+DVECLevelDBError.h"
 
@@ -22,6 +23,13 @@ leveldb::Slice sliceForData(NSData *data) {
     return leveldb::Slice((const char *)data.bytes, data.length);
 }
 
+NSData *dataForString(const std::string &string) {
+    if (string.size() == 0) {
+        return [NSData data];
+    }
+    return [[NSData alloc] initWithBytesNoCopy:(void *)string.data() length:string.size() freeWhenDone:NO];
+}
+
 NSData *dataForSlice(const leveldb::Slice &slice) {
     if (slice.size() == 0) {
         return [NSData data];
@@ -29,11 +37,11 @@ NSData *dataForSlice(const leveldb::Slice &slice) {
     return [[NSData alloc] initWithBytesNoCopy:(void *)slice.data() length:slice.size() freeWhenDone:NO];
 }
 
-NSData *dataForString(const std::string &string) {
-    if (string.size() == 0) {
-        return [NSData data];
+NSData *createDataForString(std::string &string) {
+    if (string.length() == 0) {
+        return [NSData new];
     }
-    return [[NSData alloc] initWithBytesNoCopy:(void *)string.data() length:string.size() freeWhenDone:NO];
+    return [[NSData alloc] initWithBytes:string.data() length:string.length()];
 }
 
 void copyDataToString(NSData *data, std::string &string) {
@@ -49,13 +57,15 @@ void copyDataToString(NSData *data, std::string &string) {
 #pragma mark -
 @interface DVECLevelDB()
 @property (nonatomic, strong) NSURL *directoryURL;
+@property (nonatomic, strong) id<DVECLevelDBKeyComparator> keyComparator;
+
 @property (nonatomic, strong) DVECLevelDBOptions *options;
 @property (nonatomic, assign) leveldb::DB *db;
 
-@property (nonatomic, assign) leveldb::Logger *logger;
-@property (nonatomic, assign) leveldb::Comparator *keyComparator;
-@property (nonatomic, assign) leveldb::FilterPolicy *filterPolicy;
-@property (nonatomic, assign) leveldb::Cache *blockCache;
+@property (nonatomic, assign) leveldb::Logger *leveldbLogger;
+@property (nonatomic, assign) leveldb::Comparator *leveldbKeyComparator;
+@property (nonatomic, assign) leveldb::FilterPolicy *leveldbFilterPolicy;
+@property (nonatomic, assign) leveldb::Cache *leveldbBlockCache;
 @end
 
 @implementation DVECLevelDB
@@ -142,15 +152,17 @@ void copyDataToString(NSData *data, std::string &string) {
         return nil;
     }
 
-    _logger = logger;
-    _keyComparator = keyComparator;
-    _filterPolicy = filterPolicy;
-    _blockCache = blockCache;
+    _leveldbLogger = logger;
+    _leveldbKeyComparator = keyComparator;
+    _leveldbFilterPolicy = filterPolicy;
+    _leveldbBlockCache = blockCache;
 
-    leveldb::Options levelDBOptions = [options createLevelDBOptionsWithLogger:_logger
-                                                                keyComparator:_keyComparator
-                                                                 filterPolicy:_filterPolicy
-                                                                   blockCache:_blockCache];
+    leveldb::Options levelDBOptions = [options createLevelDBOptionsWithLogger:_leveldbLogger
+                                                                keyComparator:_leveldbKeyComparator
+                                                                 filterPolicy:_leveldbFilterPolicy
+                                                                   blockCache:_leveldbBlockCache];
+    _keyComparator = [[DVECLevelDBInternalComparatorCaller alloc] initWithComparator:levelDBOptions.comparator];
+
     leveldb::DB *db;
     leveldb::Status status = leveldb::DB::Open(levelDBOptions, [url.path UTF8String], &db);
 
@@ -240,14 +252,14 @@ void copyDataToString(NSData *data, std::string &string) {
     delete _db;
     _db = nil;
 
-    delete _logger;
-    _logger = nil;
-    delete _keyComparator;
-    _keyComparator = nil;
-    delete _filterPolicy;
-    _filterPolicy = nil;
-    delete _blockCache;
-    _blockCache = nil;
+    delete _leveldbLogger;
+    _leveldbLogger = nil;
+    delete _leveldbKeyComparator;
+    _leveldbKeyComparator = nil;
+    delete _leveldbFilterPolicy;
+    _leveldbFilterPolicy = nil;
+    delete _leveldbBlockCache;
+    _leveldbBlockCache = nil;
 }
 
 - (id)valueForKey:(NSString *)key {
@@ -357,6 +369,28 @@ void copyDataToString(NSData *data, std::string &string) {
 
 - (NSEnumerator<NSData *>*)keyEnumerator {
     return [[DVECLevelDBKeyEnumerator alloc] initWithDB:self reverse:NO options:[DVECLevelDBReadOptions new]];
+}
+
+- (NSArray<NSNumber *> *)getApproximateSizesForKeyRanges:(NSArray<DVECLevelDBKeyRange *> *)keyRanges {
+    NSMutableArray *arrSizes = [[NSMutableArray alloc] initWithCapacity:keyRanges.count];
+
+    leveldb::Range *ranges = new leveldb::Range[keyRanges.count];
+    uint64_t *sizes = new uint64_t[keyRanges.count];
+
+    for (int i = 0; i < keyRanges.count; i++) {
+        ranges[i].start = sliceForData(keyRanges[i].startKey);
+        ranges[i].limit = sliceForData(keyRanges[i].limitKey);
+    }
+    self.db->GetApproximateSizes(ranges, keyRanges.count, sizes);
+
+    for (int i = 0; i < keyRanges.count; i++) {
+        [arrSizes addObject:@(sizes[i])];
+    }
+
+    delete[] sizes;
+    delete[] ranges;
+
+    return [NSArray arrayWithArray:arrSizes];
 }
 
 - (void)compactWithStartKey:(NSData *)startKey endKey:(NSData *)endKey {

@@ -4,6 +4,7 @@
 #import <Foundation/Foundation.h>
 #import "DVECLevelDBOptions.h"
 #import "DVECLevelDBKeyComparator.h"
+#import "DVECLevelDBKeyRange.h"
 #import "DVECLevelDBFilterPolicy.h"
 
 #define KVC_SWIFT_UNAVAILABLE NS_SWIFT_UNAVAILABLE("Key value coding method not available for Swift.")
@@ -17,6 +18,7 @@ __attribute__((objc_subclassing_restricted))
 @property (class, nonatomic, assign, readonly) int minorVersion;
 @property (nonatomic, strong, readonly) NSURL *directoryURL;
 @property (nonatomic, strong, readonly) DVECLevelDBOptions *options;
+@property (nonatomic, strong, readonly) id<DVECLevelDBKeyComparator> keyComparator;
 
 + (BOOL)destroyDbAtDirectoryURL:(NSURL *)url
                         options:(DVECLevelDBOptions *)options
@@ -66,6 +68,7 @@ __attribute__((objc_subclassing_restricted))
 
 - (NSEnumerator<NSData *>*)keyEnumerator;
 
+- (NSArray<NSNumber *> *)getApproximateSizesForKeyRanges:(NSArray<DVECLevelDBKeyRange *> *)keyRanges;
 - (void)compactWithStartKey:(nullable NSData *)startKey endKey:(nullable NSData *)endKey;
 
 - (id)valueForKey:(NSString *)key KVC_SWIFT_UNAVAILABLE;

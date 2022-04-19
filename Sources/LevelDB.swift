@@ -78,7 +78,20 @@ open class LevelDB {
             try cLevelDB.removeValue(forKey: keyData, options: options)
         }
     }
-    
+
+    public func getApproximateSizes<Key>(
+        forKeyRanges keyRanges: [(startKey: Key, limitKey: Key)]
+    ) -> [UInt64] where Key: ContiguousBytes {
+        let cKeyRanges = keyRanges.map { keyRange in
+            keyRange.startKey.withUnsafeData { startKeyData in
+                keyRange.limitKey.withUnsafeData { limitKeyData in
+                    CLevelDB.KeyRange(startKey: startKeyData, limitKey: limitKeyData)
+                }
+            }
+        }
+        return cLevelDB.getApproximateSizes(for: cKeyRanges).map { $0.uint64Value }
+    }
+
     public func compact() {
         cLevelDB.compact(withStartKey: nil, endKey: nil)
     }
@@ -98,6 +111,18 @@ open class LevelDB {
     public func compact<Key>(startKey: Key, endKey: Key) where Key: ContiguousBytes {
         startKey.withUnsafeData { startKeyData in
             endKey.withUnsafeData { endKeyData in
+                cLevelDB.compact(withStartKey: startKeyData, endKey: endKeyData)
+            }
+        }
+    }
+
+    public func compact<Key>(keyRange: ClosedRange<Key>) where Key: ContiguousBytes {
+        guard keyRange.isEmpty == false else {
+            return
+        }
+
+        keyRange.lowerBound.withUnsafeData { startKeyData in
+            keyRange.upperBound.withUnsafeData { endKeyData in
                 cLevelDB.compact(withStartKey: startKeyData, endKey: endKeyData)
             }
         }
@@ -126,10 +151,6 @@ public extension LevelDB {
             logger: LevelDBBlockLogger(logger)
         )
     }
-
-    func compact<Key>(range: Range<Key>) where Key: ContiguousBytes {
-        compact(startKey: range.lowerBound, endKey: range.upperBound)
-    }
 }
 
 public extension LevelDB {
@@ -147,7 +168,7 @@ public extension LevelDB {
 }
 
 public extension LevelDB.DBProperty {
-    static let keyPrefix = "leveldb."
+    static let keyPrefix = "leveldb"
 
     var key: String {
         let key: String
@@ -161,7 +182,7 @@ public extension LevelDB.DBProperty {
         case .approximateMemoryUsage:
             key = "approximate-memory-usage"
         }
-        return "\(Self.keyPrefix)\(key)"
+        return "\(Self.keyPrefix).\(key)"
     }
 }
 

@@ -237,6 +237,36 @@ final class DVELevelDBTests: XCTestCase {
         XCTAssertNil(value4)
     }
 
+    func testGetApproximateSizes() throws {
+        let options: LevelDB.Options = .default
+        options.compression = .none
+        let levelDB = try LevelDB(directoryURL: directoryUrl, options: options)
+
+        let value1 = Data(repeating: 1, count: 100*1024)
+        let value2 = Data(repeating: 2, count: 200*1024)
+        let value3 = Data(repeating: 3, count: 300*1024)
+
+        try levelDB.setValue(value1, forKey: "A1", options: .useSyncWrite)
+        try levelDB.setValue(value2, forKey: "B1", options: .useSyncWrite)
+        try levelDB.setValue(value3, forKey: "C1", options: .useSyncWrite)
+
+        levelDB.compact()
+
+        let sizes1 = try levelDB.getApproximateSizes(forKeyRanges: ["A1"..."A1"])
+        let sizes2 = try levelDB.getApproximateSizes(forKeyRanges: ["A1"..<"B1"])
+        let sizes3 = try levelDB.getApproximateSizes(forKeyRanges: ["A1"..<"C1"])
+        let sizes4 = try levelDB.getApproximateSizes(forKeyRanges: ["A1"..."B1", "B1"..."C1"])
+
+        XCTAssertEqual(sizes1.count, 1)
+        XCTAssertEqual(sizes2.count, 1)
+        XCTAssertEqual(sizes3.count, 1)
+        XCTAssertEqual(sizes4.count, 2)
+
+        XCTAssert(sizes1.first! > 0)
+        XCTAssertEqual(sizes1.first, sizes2.first)
+        XCTAssertGreaterThan(sizes3.first!, sizes1.first!)
+    }
+
     func testCompact() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
 
@@ -274,7 +304,7 @@ final class DVELevelDBTests: XCTestCase {
         try levelDB.setValue("Value2", forKey: "B1")
         try levelDB.setValue("Value3", forKey: "C1")
 
-        try levelDB.compact(startKey: "A1", endKey: "B1")
+        try levelDB.compact(keyRange: "A1"..."B1")
     }
 }
 

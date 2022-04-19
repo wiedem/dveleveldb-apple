@@ -38,6 +38,49 @@ public extension LevelDB {
         try removeValue(forKey: keyData, options: options)
     }
 
+    func getApproximateSizes<Key>(
+        forKeyRanges keyRanges: [Range<Key>],
+        keyEncoding: String.Encoding = .utf8
+    ) throws -> [UInt64] where Key: StringProtocol {
+        let dataKeyRanges = try keyRanges.map { range -> (Data, Data) in
+            guard range.isEmpty == false else {
+                throw Error(.invalidArgument)
+            }
+
+            guard let startKeyData = range.lowerBound.data(using: keyEncoding, allowLossyConversion: false),
+                  let limitKeyData = range.upperBound.data(using: keyEncoding, allowLossyConversion: false) else {
+                throw Error(.invalidArgument)
+            }
+
+            guard range.contains(range.upperBound) == false else  {
+                guard let limitSuccessor = cLevelDB.keyComparator.findShortestSuccessor?(limitKeyData) else {
+                    throw Error(.invalidArgument)
+                }
+                return (startKeyData, limitSuccessor)
+            }
+            return (startKeyData, limitKeyData)
+        }
+        return getApproximateSizes(forKeyRanges: dataKeyRanges)
+    }
+
+    func getApproximateSizes<Key>(
+        forKeyRanges keyRanges: [ClosedRange<Key>],
+        keyEncoding: String.Encoding = .utf8
+    ) throws -> [UInt64] where Key: StringProtocol {
+        let dataKeyRanges = try keyRanges.map { range -> (Data, Data) in
+            guard let startKeyData = range.lowerBound.data(using: keyEncoding, allowLossyConversion: false),
+                  let limitKeyData = range.upperBound.data(using: keyEncoding, allowLossyConversion: false) else {
+                throw Error(.invalidArgument)
+            }
+            
+            guard let limitSuccessor = cLevelDB.keyComparator.findShortestSuccessor?(limitKeyData) else {
+                throw Error(.invalidArgument)
+            }
+            return (startKeyData, limitSuccessor)
+        }
+        return getApproximateSizes(forKeyRanges: dataKeyRanges)
+    }
+
     func compact<Key>(startKey: Key, keyEncoding: String.Encoding = .utf8) throws where Key: StringProtocol {
         guard let keyData = startKey.data(using: keyEncoding, allowLossyConversion: false) else {
             throw Error(.invalidArgument)
@@ -52,9 +95,9 @@ public extension LevelDB {
         compact(endKey: keyData)
     }
 
-    func compact<Key>(startKey: Key, endKey: Key, keyEncoding: String.Encoding = .utf8) throws where Key: StringProtocol {
-        guard let startKeyData = startKey.data(using: keyEncoding, allowLossyConversion: false),
-              let endKeyData = endKey.data(using: keyEncoding, allowLossyConversion: false) else {
+    func compact<Key>(keyRange: ClosedRange<Key>, keyEncoding: String.Encoding = .utf8) throws where Key: StringProtocol {
+        guard let startKeyData = keyRange.lowerBound.data(using: keyEncoding, allowLossyConversion: false),
+              let endKeyData = keyRange.upperBound.data(using: keyEncoding, allowLossyConversion: false) else {
             throw Error(.invalidArgument)
         }
         compact(startKey: startKeyData, endKey: endKeyData)
