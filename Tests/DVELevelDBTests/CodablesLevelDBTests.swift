@@ -15,7 +15,7 @@ class CodablesLevelDBTests: XCTestCase {
         case key3
     }
 
-    struct TestObject: Codable {
+    struct TestObject: Codable, Equatable {
         let stringValue: String
         let intValue: Int
     }
@@ -40,13 +40,15 @@ class CodablesLevelDBTests: XCTestCase {
 
         //
         try levelDB.setValue("Test1", forKey: .key1)
-        try levelDB.setValue(TestObject(stringValue: "Test2", intValue: 1), forKey: .key2)
+        let testObject = TestObject(stringValue: "Test2", intValue: 1)
+        try levelDB.setValue(testObject, forKey: .key2)
 
         let value1: String? = levelDB[.key1]
         XCTAssertEqual(value1, "Test1")
 
         let value2: TestObject? = levelDB[.key2]
         XCTAssertNotNil(value2)
+        XCTAssertEqual(value2, testObject)
 
         let value3: String? = levelDB[.key3]
         XCTAssertNil(value3)
