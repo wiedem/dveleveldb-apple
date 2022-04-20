@@ -19,7 +19,7 @@ public:
     }
 
     int Compare(const leveldb::Slice &a, const leveldb::Slice &b) const override {
-        return int([_comparator compareKey1:dataForSlice(a) withKey2:dataForSlice(b)]);
+        return int([_comparator compare:dataForSlice(a) with:dataForSlice(b)]);
     }
 
     const char* Name() const override { return [_comparator.name UTF8String]; }

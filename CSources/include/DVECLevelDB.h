@@ -18,7 +18,6 @@ __attribute__((objc_subclassing_restricted))
 @property (class, nonatomic, assign, readonly) int minorVersion;
 @property (nonatomic, strong, readonly) NSURL *directoryURL;
 @property (nonatomic, strong, readonly) DVECLevelDBOptions *options;
-@property (nonatomic, strong, readonly) id<DVECLevelDBKeyComparator> keyComparator;
 
 + (BOOL)destroyDbAtDirectoryURL:(NSURL *)url
                         options:(DVECLevelDBOptions *)options
@@ -33,8 +32,6 @@ __attribute__((objc_subclassing_restricted))
                        options:(DVECLevelDBOptions *)options
                   formatLogger:(nullable id<DVECLevelDBFormatLogger>)formatLogger
                          error:(NSError *_Nullable *_Nullable)error;
-
-+ (id<DVECLevelDBKeyComparator>)bytewiseKeyComparator;
 
 - (instancetype)init NS_UNAVAILABLE;
 

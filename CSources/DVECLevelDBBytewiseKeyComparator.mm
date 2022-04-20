@@ -1,35 +1,22 @@
 // Copyright (c) diva-e NEXT GmbH. All rights reserved.
 // Licensed under the MIT License.
 
-#import "DVECLevelDBInternalComparator.h"
+#import "DVECLevelDBBytewiseKeyComparator.h"
 #import "DVECLevelDB+Internal.h"
 
-@interface DVECLevelDBInternalComparator()
+#import "leveldb/leveldb/comparator.h"
+
+@interface DVECLevelDBBytewiseKeyComparator()
 @property (nonatomic, assign) leveldb::Comparator const *comparator;
-@property (nonatomic, assign) BOOL freeWhenDone;
 @end
 
-@implementation DVECLevelDBInternalComparator
+@implementation DVECLevelDBBytewiseKeyComparator
 
-+ (instancetype)bytewiseComparator {
-    return [[DVECLevelDBInternalComparator alloc] initWithComparator:leveldb::BytewiseComparator()
-                                                        freeWhenDone:NO];
-}
-
-- (instancetype)initWithComparator:(const leveldb::Comparator *)comparator
-                      freeWhenDone:(BOOL)freeWhenDone {
+- (instancetype)init {
     if (self = [super init]) {
-        _comparator = comparator;
-        _freeWhenDone = freeWhenDone;
+        _comparator = leveldb::BytewiseComparator();
     }
     return self;
-}
-
-- (void)dealloc {
-    if (self.freeWhenDone) {
-        delete _comparator;
-        _comparator = nil;
-    }
 }
 
 - (NSString *)name {

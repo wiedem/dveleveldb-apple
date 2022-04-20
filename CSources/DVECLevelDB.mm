@@ -58,11 +58,11 @@ void copyDataToString(NSData *data, std::string &string) {
 #pragma mark -
 @interface DVECLevelDB()
 @property (nonatomic, strong) NSURL *directoryURL;
-@property (nonatomic, strong) id<DVECLevelDBKeyComparator> keyComparator;
 
 @property (nonatomic, strong) DVECLevelDBOptions *options;
 @property (nonatomic, assign) leveldb::DB *db;
 
+@property (nonatomic, assign) leveldb::Comparator *leveldbComparator;
 @property (nonatomic, assign) leveldb::Logger *leveldbLogger;
 @property (nonatomic, assign) leveldb::FilterPolicy *leveldbFilterPolicy;
 @property (nonatomic, assign) leveldb::Cache *leveldbBlockCache;
@@ -122,10 +122,6 @@ void copyDataToString(NSData *data, std::string &string) {
     return [self repairDbAtDirectoryURL:url options:options logger:logger error:error];
 }
 
-+ (id<DVECLevelDBKeyComparator>)bytewiseKeyComparator {
-    return [DVECLevelDBInternalComparator bytewiseComparator];
-}
-
 + (void)raiseCriticalExceptionForError:(NSError *)error key:(NSData *)key {
     NSString *debugDescription = error.userInfo[NSDebugDescriptionErrorKey];
     if (debugDescription == nil) {
@@ -176,15 +172,8 @@ void copyDataToString(NSData *data, std::string &string) {
     _leveldbLogger = [DVECLevelDBOptions createSimpleLoggerFacade:simpleLogger];
 
     // Comparator.
-    const leveldb::Comparator *leveldbKeyComparator = nil;
-
-    if (keyComparator == nil) {
-        DVECLevelDBInternalComparator *internalComparator = [DVECLevelDBInternalComparator bytewiseComparator];
-        _keyComparator = internalComparator;
-        leveldbKeyComparator = internalComparator.comparator;
-    } else {
-        _keyComparator = keyComparator;
-        leveldbKeyComparator = new DVECLevelDBComparatorFacade(keyComparator);
+    if (keyComparator != nil) {
+        _leveldbComparator = new DVECLevelDBComparatorFacade(keyComparator);
     }
 
     // Filter policy.
@@ -199,7 +188,7 @@ void copyDataToString(NSData *data, std::string &string) {
 
     //
     leveldb::Options levelDBOptions = [options createLevelDBOptionsWithLogger:_leveldbLogger
-                                                                keyComparator:leveldbKeyComparator
+                                                                keyComparator:_leveldbComparator
                                                                  filterPolicy:_leveldbFilterPolicy
                                                                    blockCache:_leveldbBlockCache];
 
@@ -234,15 +223,9 @@ void copyDataToString(NSData *data, std::string &string) {
     _leveldbLogger = [DVECLevelDBOptions createFormatLoggerFacade:formatLogger];
 
     // Comparator.
-    const leveldb::Comparator *leveldbKeyComparator = nil;
-
-    if (keyComparator == nil) {
-        DVECLevelDBInternalComparator *internalComparator = [DVECLevelDBInternalComparator bytewiseComparator];
-        _keyComparator = internalComparator;
-        leveldbKeyComparator = internalComparator.comparator;
-    } else {
-        _keyComparator = keyComparator;
-        leveldbKeyComparator = new DVECLevelDBComparatorFacade(keyComparator);
+    // Comparator.
+    if (keyComparator != nil) {
+        _leveldbComparator = new DVECLevelDBComparatorFacade(keyComparator);
     }
 
     // Filter policy.
@@ -257,7 +240,7 @@ void copyDataToString(NSData *data, std::string &string) {
 
     //
     leveldb::Options levelDBOptions = [options createLevelDBOptionsWithLogger:_leveldbLogger
-                                                                keyComparator:leveldbKeyComparator
+                                                                keyComparator:_leveldbComparator
                                                                  filterPolicy:_leveldbFilterPolicy
                                                                    blockCache:_leveldbBlockCache];
 
@@ -277,6 +260,8 @@ void copyDataToString(NSData *data, std::string &string) {
     delete _db;
     _db = nil;
 
+    delete _leveldbComparator;
+    _leveldbComparator = nil;
     delete _leveldbLogger;
     _leveldbLogger = nil;
     delete _leveldbFilterPolicy;

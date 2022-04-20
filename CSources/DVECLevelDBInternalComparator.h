@@ -13,8 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)bytewiseComparator;
 
 - (instancetype)initWithComparator:(const leveldb::Comparator *)comparator
-                      freeWhenDone:(BOOL)freeWhenDone
-                    stringEncoding:(NSStringEncoding)stringEncoding;
+                      freeWhenDone:(BOOL)freeWhenDone;
 @end
 
 NS_ASSUME_NONNULL_END

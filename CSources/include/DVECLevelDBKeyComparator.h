@@ -8,8 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(CLevelDB.KeyComparator)
 @protocol DVECLevelDBKeyComparator <NSObject>
 @property (nonatomic, readonly) NSString *name;
-@property (nonatomic, readonly) NSStringEncoding stringEncoding NS_REFINED_FOR_SWIFT;
-- (NSComparisonResult)compareKey1:(NSData *)key1 withKey2:(NSData *)key2;
+- (NSComparisonResult)compare:(NSData *)key1 with:(NSData *)key2;
 
 @optional
 - (nullable NSData *)findShortestSeparator:(NSData *)start limit:(NSData *)limit;

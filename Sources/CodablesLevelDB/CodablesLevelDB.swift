@@ -1,16 +1,16 @@
 // Copyright (c) diva-e NEXT GmbH. All rights reserved.
 // Licensed under the MIT License.
 
+import DVELevelDB_ObjC
 import Foundation
 
-open class CodablesLevelDB<Key: CodingKey>: LevelDB {
+open class CodablesLevelDB<Key>: LevelDB<CLevelDB.BytewiseKeyComparator> where Key: CodingKey {
     private let valueCoder: LevelDBValueCoder
 
     public init(
         directoryURL url: URL,
         options: Options = .default,
         valueCoder: LevelDBValueCoder,
-        keyComparator: KeyComparator? = nil,
         filterPolicy: FilterPolicy? = nil,
         lruBlockCacheSize: size_t = 0,
         logger: Logger? = nil
@@ -20,7 +20,7 @@ open class CodablesLevelDB<Key: CodingKey>: LevelDB {
         try super.init(
             directoryURL: url,
             options: options,
-            keyComparator: keyComparator,
+            keyComparator: .init(),
             filterPolicy: filterPolicy,
             lruBlockCacheSize: lruBlockCacheSize,
             logger: logger

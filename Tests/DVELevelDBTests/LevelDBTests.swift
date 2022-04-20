@@ -184,7 +184,7 @@ final class LevelDBTests: XCTestCase {
 
     func testKeyComparator() throws {
         // A simple key comparator implementation for UTF-8 encoded string keys.
-        let keyComparator = LevelDB.KeyComparator(name: "Test", stringEncoding: .utf8) { key1, key2 in
+        let keyComparator = KeyComparator(name: "Test") { key1, key2 in
             // We simply compare the keys as strings.
             let key1String = String(data: key1, encoding: .utf8)!
             let key2String = String(data: key2, encoding: .utf8)!
