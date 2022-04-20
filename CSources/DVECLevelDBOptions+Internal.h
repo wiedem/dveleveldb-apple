@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (leveldb::Options)createDefaultLevelDBOptions;
 - (leveldb::Options)createLevelDBOptionsWithLogger:(nullable leveldb::Logger *)logger
-                                     keyComparator:(nullable leveldb::Comparator *)keyComparator
+                                     keyComparator:(nullable const leveldb::Comparator *)keyComparator
                                       filterPolicy:(nullable leveldb::FilterPolicy *)filterPolicy
                                         blockCache:(nullable leveldb::Cache *)blockCache;
 @end

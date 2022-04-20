@@ -43,10 +43,12 @@ public extension LevelDB {
 public extension LevelDB {
     func value<Key, Value, Decoder>(
         forKey key: Key,
-        keyEncoding: String.Encoding = .utf8,
         decoder: Decoder,
         options: ReadOptions = .default
     ) throws -> Value? where Key: StringProtocol, Value: Decodable, Decoder: LevelDBDataDecoder {
+        guard let keyEncoding = cLevelDB.keyComparator.stringEncoding else {
+            throw Error(.unsupportedKeyEncoding)
+        }
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
             throw CLevelDB.Error(.invalidArgument)
         }
@@ -59,10 +61,12 @@ public extension LevelDB {
     func setValue<Value, Key, Encoder>(
         _ value: Value,
         forKey key: Key,
-        keyEncoding: String.Encoding = .utf8,
         encoder: Encoder,
         options: WriteOptions = .default
     ) throws where Key: StringProtocol, Value: Encodable, Encoder: LevelDBDataEncoder {
+        guard let keyEncoding = cLevelDB.keyComparator.stringEncoding else {
+            throw Error(.unsupportedKeyEncoding)
+        }
         guard let keyData = key.data(using: keyEncoding, allowLossyConversion: false) else {
             throw CLevelDB.Error(.invalidArgument)
         }

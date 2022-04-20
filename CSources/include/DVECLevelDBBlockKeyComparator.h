@@ -16,6 +16,7 @@ typedef NSData *_Nullable (^DVECLevelDBKeyFindShortestSuccessorBlock)(NSData *ke
 NS_SWIFT_NAME(CLevelDB.BlockKeyComparator)
 @interface DVECLevelDBBlockKeyComparator: NSObject<DVECLevelDBKeyComparator>
 - (instancetype)initWithName:(NSString *)name
+              stringEncoding:(NSStringEncoding)stringEncoding
                   comparator:(DVECLevelDBKeyComparatorBlock)comparator
        findShortestSeparator:(nullable DVECLevelDBKeyFindShortestSeparatorBlock)findShortestSeparator
        findShortestSuccessor:(nullable DVECLevelDBKeyFindShortestSuccessorBlock)findShortestSuccessor NS_REFINED_FOR_SWIFT;

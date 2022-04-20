@@ -1,20 +1,39 @@
 // Copyright (c) diva-e NEXT GmbH. All rights reserved.
 // Licensed under the MIT License.
 
-#import "DVECLevelDBInternalComparatorCaller.h"
+#import "DVECLevelDBInternalComparator.h"
 #import "DVECLevelDB+Internal.h"
 
-@interface DVECLevelDBInternalComparatorCaller()
+@interface DVECLevelDBInternalComparator()
 @property (nonatomic, assign) leveldb::Comparator const *comparator;
+@property (nonatomic, assign) BOOL freeWhenDone;
+@property (nonatomic) NSStringEncoding stringEncoding;
 @end
 
-@implementation DVECLevelDBInternalComparatorCaller
+@implementation DVECLevelDBInternalComparator
 
-- (instancetype)initWithComparator:(const leveldb::Comparator *)comparator {
++ (instancetype)bytewiseComparator {
+    return [[DVECLevelDBInternalComparator alloc] initWithComparator:leveldb::BytewiseComparator()
+                                                        freeWhenDone:NO
+                                                      stringEncoding:NSUTF8StringEncoding];
+}
+
+- (instancetype)initWithComparator:(const leveldb::Comparator *)comparator
+                      freeWhenDone:(BOOL)freeWhenDone
+                    stringEncoding:(NSStringEncoding)stringEncoding {
     if (self = [super init]) {
         _comparator = comparator;
+        _freeWhenDone = freeWhenDone;
+        _stringEncoding = stringEncoding;
     }
     return self;
+}
+
+- (void)dealloc {
+    if (self.freeWhenDone) {
+        delete _comparator;
+        _comparator = nil;
+    }
 }
 
 - (NSString *)name {

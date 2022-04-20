@@ -5,6 +5,7 @@
 
 @interface DVECLevelDBBlockKeyComparator()
 @property (nonatomic, strong) NSString *name;
+@property (nonatomic) NSStringEncoding stringEncoding;
 @property (nonatomic, copy) DVECLevelDBKeyComparatorBlock comparator;
 @property (nonatomic, copy) DVECLevelDBKeyFindShortestSeparatorBlock findShortestSeparator;
 @property (nonatomic, copy) DVECLevelDBKeyFindShortestSuccessorBlock findShortestSuccessor;
@@ -13,11 +14,13 @@
 @implementation DVECLevelDBBlockKeyComparator
 
 - (instancetype)initWithName:(NSString *)name
+              stringEncoding:(NSStringEncoding)stringEncoding
                   comparator:(DVECLevelDBKeyComparatorBlock)comparator
        findShortestSeparator:(DVECLevelDBKeyFindShortestSeparatorBlock)findShortestSeparator
        findShortestSuccessor:(DVECLevelDBKeyFindShortestSuccessorBlock)findShortestSuccessor {
     if (self = [super init]) {
         _name = name;
+        _stringEncoding = stringEncoding;
         _comparator = comparator;
         _findShortestSeparator = findShortestSeparator;
         _findShortestSuccessor = findShortestSuccessor;

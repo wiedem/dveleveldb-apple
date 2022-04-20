@@ -34,6 +34,8 @@ __attribute__((objc_subclassing_restricted))
                   formatLogger:(nullable id<DVECLevelDBFormatLogger>)formatLogger
                          error:(NSError *_Nullable *_Nullable)error;
 
++ (id<DVECLevelDBKeyComparator>)bytewiseKeyComparator;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 - (nullable instancetype)initWithDirectoryURL:(NSURL *)url

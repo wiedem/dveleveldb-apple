@@ -12,11 +12,12 @@
 #import "DVECLevelDBWriteOptions+Internal.h"
 #import "DVECLevelDBKeyEnumerator.h"
 #import "DVECLevelDBKeyComparator.h"
-#import "DVECLevelDBInternalComparatorCaller.h"
+#import "DVECLevelDBInternalComparator.h"
 #import "DVECLevelDBError.h"
 #import "NSError+DVECLevelDBError.h"
 
 #import "leveldb/leveldb/db.h"
+#import "leveldb/leveldb/comparator.h"
 
 #pragma mark NSData conversion helper functions
 leveldb::Slice sliceForData(NSData *data) {
@@ -63,7 +64,6 @@ void copyDataToString(NSData *data, std::string &string) {
 @property (nonatomic, assign) leveldb::DB *db;
 
 @property (nonatomic, assign) leveldb::Logger *leveldbLogger;
-@property (nonatomic, assign) leveldb::Comparator *leveldbKeyComparator;
 @property (nonatomic, assign) leveldb::FilterPolicy *leveldbFilterPolicy;
 @property (nonatomic, assign) leveldb::Cache *leveldbBlockCache;
 @end
@@ -122,6 +122,10 @@ void copyDataToString(NSData *data, std::string &string) {
     return [self repairDbAtDirectoryURL:url options:options logger:logger error:error];
 }
 
++ (id<DVECLevelDBKeyComparator>)bytewiseKeyComparator {
+    return [DVECLevelDBInternalComparator bytewiseComparator];
+}
+
 + (void)raiseCriticalExceptionForError:(NSError *)error key:(NSData *)key {
     NSString *debugDescription = error.userInfo[NSDebugDescriptionErrorKey];
     if (debugDescription == nil) {
@@ -138,33 +142,9 @@ void copyDataToString(NSData *data, std::string &string) {
     return leveldb::kMinorVersion;
 }
 
-#pragma mark -
-- (instancetype)initWithDirectoryURL:(NSURL *)url
-                             options:(DVECLevelDBOptions *)options
-                              logger:(leveldb::Logger *)logger
-                       keyComparator:(leveldb::Comparator *)keyComparator
-                        filterPolicy:(leveldb::FilterPolicy *)filterPolicy
-                          blockCache:(leveldb::Cache *)blockCache
-                               error:(NSError **)error
-{
-    self = [super init];
-    if (!self) {
-        return nil;
-    }
-
-    _leveldbLogger = logger;
-    _leveldbKeyComparator = keyComparator;
-    _leveldbFilterPolicy = filterPolicy;
-    _leveldbBlockCache = blockCache;
-
-    leveldb::Options levelDBOptions = [options createLevelDBOptionsWithLogger:_leveldbLogger
-                                                                keyComparator:_leveldbKeyComparator
-                                                                 filterPolicy:_leveldbFilterPolicy
-                                                                   blockCache:_leveldbBlockCache];
-    _keyComparator = [[DVECLevelDBInternalComparatorCaller alloc] initWithComparator:levelDBOptions.comparator];
-
++ (leveldb::DB *)openLevelDBAtUrl:(NSURL *)url options:(leveldb::Options)options error:(NSError **)error {
     leveldb::DB *db;
-    leveldb::Status status = leveldb::DB::Open(levelDBOptions, [url.path UTF8String], &db);
+    leveldb::Status status = leveldb::DB::Open(options, [url.path UTF8String], &db);
 
     NSError *levelDBError = [NSError createFromLevelDBStatus:status];
     if (levelDBError != nil) {
@@ -173,13 +153,10 @@ void copyDataToString(NSData *data, std::string &string) {
         }
         return nil;
     }
-    _db = db;
-    _directoryURL = url;
-    _options = options;
-
-    return self;
+    return db;
 }
 
+#pragma mark -
 - (instancetype)initWithDirectoryURL:(NSURL *)url
                              options:(DVECLevelDBOptions *)options
                         simpleLogger:(id<DVECLevelDBSimpleLogger>)simpleLogger
@@ -188,30 +165,54 @@ void copyDataToString(NSData *data, std::string &string) {
                    lruBlockCacheSize:(size_t)lruBlockCacheSize
                                error:(NSError **)error
 {
-    leveldb::Logger *loggerFacade = [DVECLevelDBOptions createSimpleLoggerFacade:simpleLogger];
-
-    leveldb::Comparator *keyComparatorFacade = nil;
-    if (keyComparator != nil) {
-        keyComparatorFacade = new DVECLevelDBComparatorFacade(keyComparator);
+    self = [super init];
+    if (!self) {
+        return nil;
     }
 
-    leveldb::FilterPolicy *filterPolicyFacade = nil;
+    _options = options;
+
+    // Logger.
+    _leveldbLogger = [DVECLevelDBOptions createSimpleLoggerFacade:simpleLogger];
+
+    // Comparator.
+    const leveldb::Comparator *leveldbKeyComparator = nil;
+
+    if (keyComparator == nil) {
+        DVECLevelDBInternalComparator *internalComparator = [DVECLevelDBInternalComparator bytewiseComparator];
+        _keyComparator = internalComparator;
+        leveldbKeyComparator = internalComparator.comparator;
+    } else {
+        _keyComparator = keyComparator;
+        leveldbKeyComparator = new DVECLevelDBComparatorFacade(keyComparator);
+    }
+
+    // Filter policy.
     if (filterPolicy != nil) {
-        filterPolicyFacade = new DVECLevelDBFilterPolicyFacade(filterPolicy);
+        _leveldbFilterPolicy = new DVECLevelDBFilterPolicyFacade(filterPolicy);
     }
 
-    leveldb::Cache *blockCache = nil;
+    // Block cache.
     if (lruBlockCacheSize > 0) {
-        blockCache = leveldb::NewLRUCache(lruBlockCacheSize);
+        _leveldbBlockCache = leveldb::NewLRUCache(lruBlockCacheSize);
     }
 
-    return [self initWithDirectoryURL:url
-                              options:options
-                               logger:loggerFacade
-                        keyComparator:keyComparatorFacade
-                         filterPolicy:filterPolicyFacade
-                           blockCache:blockCache
-                                error:error];
+    //
+    leveldb::Options levelDBOptions = [options createLevelDBOptionsWithLogger:_leveldbLogger
+                                                                keyComparator:leveldbKeyComparator
+                                                                 filterPolicy:_leveldbFilterPolicy
+                                                                   blockCache:_leveldbBlockCache];
+
+    NSError *levelDBError = nil;
+    _db = [DVECLevelDB openLevelDBAtUrl:url options:levelDBOptions error:&levelDBError];
+    if (levelDBError != nil) {
+        if (error != nil) {
+            *error = levelDBError;
+        }
+        return nil;
+    }
+
+    return self;
 }
 
 - (instancetype)initWithDirectoryURL:(NSURL *)url
@@ -222,30 +223,54 @@ void copyDataToString(NSData *data, std::string &string) {
                    lruBlockCacheSize:(size_t)lruBlockCacheSize
                                error:(NSError **)error
 {
-    leveldb::Logger *loggerFacade = [DVECLevelDBOptions createFormatLoggerFacade:formatLogger];
-
-    leveldb::Comparator *keyComparatorFacade = nil;
-    if (keyComparator != nil) {
-        keyComparatorFacade = new DVECLevelDBComparatorFacade(keyComparator);
+    self = [super init];
+    if (!self) {
+        return nil;
     }
 
-    leveldb::FilterPolicy *filterPolicyFacade = nil;
+    _options = options;
+
+    // Logger.
+    _leveldbLogger = [DVECLevelDBOptions createFormatLoggerFacade:formatLogger];
+
+    // Comparator.
+    const leveldb::Comparator *leveldbKeyComparator = nil;
+
+    if (keyComparator == nil) {
+        DVECLevelDBInternalComparator *internalComparator = [DVECLevelDBInternalComparator bytewiseComparator];
+        _keyComparator = internalComparator;
+        leveldbKeyComparator = internalComparator.comparator;
+    } else {
+        _keyComparator = keyComparator;
+        leveldbKeyComparator = new DVECLevelDBComparatorFacade(keyComparator);
+    }
+
+    // Filter policy.
     if (filterPolicy != nil) {
-        filterPolicyFacade = new DVECLevelDBFilterPolicyFacade(filterPolicy);
+        _leveldbFilterPolicy = new DVECLevelDBFilterPolicyFacade(filterPolicy);
     }
 
-    leveldb::Cache *blockCache = nil;
+    // Block cache.
     if (lruBlockCacheSize > 0) {
-        blockCache = leveldb::NewLRUCache(lruBlockCacheSize);
+        _leveldbBlockCache = leveldb::NewLRUCache(lruBlockCacheSize);
     }
 
-    return [self initWithDirectoryURL:url
-                              options:options
-                               logger:loggerFacade
-                        keyComparator:keyComparatorFacade
-                         filterPolicy:filterPolicyFacade
-                           blockCache:blockCache
-                                error:error];
+    //
+    leveldb::Options levelDBOptions = [options createLevelDBOptionsWithLogger:_leveldbLogger
+                                                                keyComparator:leveldbKeyComparator
+                                                                 filterPolicy:_leveldbFilterPolicy
+                                                                   blockCache:_leveldbBlockCache];
+
+    NSError *levelDBError = nil;
+    _db = [DVECLevelDB openLevelDBAtUrl:url options:levelDBOptions error:&levelDBError];
+    if (levelDBError != nil) {
+        if (error != nil) {
+            *error = levelDBError;
+        }
+        return nil;
+    }
+
+    return self;
 }
 
 - (void)dealloc {
@@ -254,8 +279,6 @@ void copyDataToString(NSData *data, std::string &string) {
 
     delete _leveldbLogger;
     _leveldbLogger = nil;
-    delete _leveldbKeyComparator;
-    _leveldbKeyComparator = nil;
     delete _leveldbFilterPolicy;
     _leveldbFilterPolicy = nil;
     delete _leveldbBlockCache;

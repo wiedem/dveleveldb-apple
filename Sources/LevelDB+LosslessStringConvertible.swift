@@ -25,7 +25,7 @@ public extension LevelDB {
         encoding: String.Encoding = .utf8,
         options: ReadOptions = .default
     ) throws -> Value? where Key: StringProtocol, Value: LosslessStringConvertible {
-        guard let valueData: Data = try value(forKey: key, keyEncoding: encoding, options: options) else {
+        guard let valueData: Data = try value(forKey: key, options: options) else {
             return nil
         }
 
@@ -59,7 +59,7 @@ public extension LevelDB {
             throw Error(.invalidArgument)
         }
 
-        try setValue(valueData, forKey: key, keyEncoding: encoding, options: options)
+        try setValue(valueData, forKey: key, options: options)
     }
 }
 
@@ -69,7 +69,7 @@ public extension LevelDB {
         encoding: String.Encoding = .utf8,
         options: ReadOptions = .default
     ) -> Value? where Key: StringProtocol, Value: LosslessStringConvertible {
-        guard let valueData: Data = self[key, encoding, options] else {
+        guard let valueData: Data = self[key, options] else {
             return nil
         }
         guard let valueString = String(data: valueData, encoding: encoding),

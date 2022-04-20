@@ -99,7 +99,7 @@ static DVECLevelDBOptionsCompression _defaultCompression = DVECLevelDBOptionsCom
 }
 
 - (leveldb::Options)createLevelDBOptionsWithLogger:(leveldb::Logger *)logger
-                                     keyComparator:(leveldb::Comparator *)keyComparator
+                                     keyComparator:(const leveldb::Comparator *)keyComparator
                                       filterPolicy:(leveldb::FilterPolicy *)filterPolicy
                                         blockCache:(leveldb::Cache *)blockCache
 {
