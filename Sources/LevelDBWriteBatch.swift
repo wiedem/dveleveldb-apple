@@ -102,10 +102,8 @@ extension CLevelDB.WriteBatch: LevelDBWriteBatch {
         _ value: Value,
         forKey key: Key
     ) where Key: ContiguousBytes, Value: ContiguousBytes {
-        key.withUnsafeData { keyData in
-            value.withUnsafeData { valueData in
-                setData(valueData, forKey: keyData)
-            }
+        withUnsafeData(key, value) { keyData, valueData in
+            setData(valueData, forKey: keyData)
         }
     }
 

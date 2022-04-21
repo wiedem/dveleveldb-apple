@@ -28,7 +28,9 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
         let keyData = try keyComparator.encodeKey(key)
         try removeValue(forKey: keyData, options: options)
     }
+}
 
+public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
     func getApproximateSizes<Key>(forKeyRanges keyRanges: [Range<Key>]) throws -> [UInt64] where Key: StringProtocol {
         let dataKeyRanges = try keyRanges.map { range -> (Data, Data) in
             guard range.isEmpty == false else {
@@ -61,7 +63,9 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
         }
         return getApproximateSizes(forKeyRanges: dataKeyRanges)
     }
+}
 
+public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
     func compact<Key>(startKey: Key) throws where Key: StringProtocol {
         let keyData = try keyComparator.encodeKey(startKey)
         compact(startKey: keyData)

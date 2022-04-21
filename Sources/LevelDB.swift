@@ -25,8 +25,8 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
         logger: Logger? = nil
     ) throws {
         self.keyComparator = keyComparator
-
         let keyComparatorFacade = CLevelDBKeyComparatorFacade(keyComparator: keyComparator)
+
         cLevelDB = try CLevelDB(
             directoryURL: url,
             options: options,
@@ -38,7 +38,7 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
     }
 
     public func getDBProperty(_ property: LevelDBProperty) -> String? {
-        return cLevelDB.dbProperty(forKey: property.key)
+        cLevelDB.dbProperty(forKey: property.key)
     }
 
     public func value<Key>(forKey key: Key, options: ReadOptions = .default) throws -> Data? where Key: ContiguousBytes {
@@ -56,10 +56,8 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
         forKey key: Key,
         options: WriteOptions = .default
     ) throws where Key: ContiguousBytes, Value: ContiguousBytes {
-        try key.withUnsafeData { keyData in
-            try value.withUnsafeData { valueData in
-                try cLevelDB.setData(valueData, forKey: keyData, options: options)
-            }
+        try withUnsafeData(key, value) { keyData, valueData in
+            try cLevelDB.setData(valueData, forKey: keyData, options: options)
         }
     }
 
@@ -76,10 +74,8 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
         forKeyRanges keyRanges: [(startKey: Key, limitKey: Key)]
     ) -> [UInt64] where Key: ContiguousBytes {
         let cKeyRanges = keyRanges.map { keyRange in
-            keyRange.startKey.withUnsafeData { startKeyData in
-                keyRange.limitKey.withUnsafeData { limitKeyData in
-                    CLevelDB.KeyRange(startKey: startKeyData, limitKey: limitKeyData)
-                }
+            withUnsafeData(keyRange.startKey, keyRange.limitKey) { startKeyData, limitKeyData in
+                CLevelDB.KeyRange(startKey: Data(startKeyData), limitKey: Data(limitKeyData))
             }
         }
         return cLevelDB.getApproximateSizes(for: cKeyRanges).map(\.uint64Value)
@@ -102,10 +98,8 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
     }
 
     public func compact<Key>(startKey: Key, endKey: Key) where Key: ContiguousBytes {
-        startKey.withUnsafeData { startKeyData in
-            endKey.withUnsafeData { endKeyData in
-                cLevelDB.compact(withStartKey: startKeyData, endKey: endKeyData)
-            }
+        withUnsafeData(startKey, endKey) { startKeyData, endKeyData in
+            cLevelDB.compact(withStartKey: startKeyData, endKey: endKeyData)
         }
     }
 
@@ -114,10 +108,8 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
             return
         }
 
-        keyRange.lowerBound.withUnsafeData { startKeyData in
-            keyRange.upperBound.withUnsafeData { endKeyData in
-                cLevelDB.compact(withStartKey: startKeyData, endKey: endKeyData)
-            }
+        withUnsafeData(keyRange.lowerBound, keyRange.upperBound) { startKeyData, endKeyData in
+            cLevelDB.compact(withStartKey: startKeyData, endKey: endKeyData)
         }
     }
 
