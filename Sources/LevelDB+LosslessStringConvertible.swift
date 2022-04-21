@@ -14,8 +14,9 @@ public extension LevelDB {
         }
 
         guard let valueString = String(data: valueData, encoding: encoding),
-              let value = Value(valueString) else {
-            throw Error(.invalidType)
+              let value = Value(valueString)
+        else {
+            throw LevelDBError.valueConversionFailed
         }
         return value
     }
@@ -27,7 +28,7 @@ public extension LevelDB {
         options: WriteOptions = .default
     ) throws where Key: ContiguousBytes, Value: LosslessStringConvertible {
         guard let valueData = value.description.data(using: encoding, allowLossyConversion: false) else {
-            throw Error(.invalidArgument)
+            throw LevelDBError.valueConversionFailed
         }
 
         try setValue(valueData, forKey: key, options: options)
@@ -40,14 +41,11 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
         encoding: String.Encoding = .utf8,
         options: ReadOptions = .default
     ) -> Value? where Key: StringProtocol, Value: LosslessStringConvertible {
-        guard let valueData: Data = self[key, options] else {
-            return nil
+        do {
+            return try value(forKey: key, encoding: encoding, options: options)
+        } catch {
+            fatalError("Error getting value from DB: \(error))")
         }
-        guard let valueString = String(data: valueData, encoding: encoding),
-              let value = Value(valueString) else {
-            fatalError("Error getting value from DB: \(Error(.invalidType))")
-        }
-        return value
     }
 }
 
@@ -62,8 +60,9 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
         }
 
         guard let valueString = String(data: valueData, encoding: encoding),
-              let value = Value(valueString) else {
-            throw Error(.invalidType)
+              let value = Value(valueString)
+        else {
+            throw LevelDBError.valueConversionFailed
         }
         return value
     }
@@ -75,7 +74,7 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
         options: WriteOptions = .default
     ) throws where Key: StringProtocol, Value: LosslessStringConvertible {
         guard let valueData = value.description.data(using: encoding, allowLossyConversion: false) else {
-            throw Error(.invalidArgument)
+            throw LevelDBError.valueConversionFailed
         }
 
         try setValue(valueData, forKey: key, options: options)

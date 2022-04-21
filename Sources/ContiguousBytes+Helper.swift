@@ -6,7 +6,7 @@ import Foundation
 extension ContiguousBytes {
     func withUnsafeData<R>(_ body: (Data) throws -> R) rethrows -> R {
         try withUnsafeBytes { buffer in
-            let rawPointer = UnsafeMutableRawPointer(mutating:  buffer.baseAddress!)
+            let rawPointer = UnsafeMutableRawPointer(mutating: buffer.baseAddress!)
             let data = Data(bytesNoCopy: rawPointer, count: buffer.count, deallocator: .none)
             return try body(data)
         }

@@ -32,15 +32,15 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
     func getApproximateSizes<Key>(forKeyRanges keyRanges: [Range<Key>]) throws -> [UInt64] where Key: StringProtocol {
         let dataKeyRanges = try keyRanges.map { range -> (Data, Data) in
             guard range.isEmpty == false else {
-                throw Error(.invalidArgument)
+                throw LevelDBError.invalidKeyRange
             }
 
             let startKeyData = try keyComparator.encodeKey(range.lowerBound)
             let limitKeyData = try keyComparator.encodeKey(range.upperBound)
 
-            guard range.contains(range.upperBound) == false else  {
+            guard range.contains(range.upperBound) == false else {
                 guard let limitSuccessor = keyComparator.findShortestSuccessor(forKey: limitKeyData) else {
-                    throw Error(.invalidArgument)
+                    throw LevelDBError.invalidKeyRange
                 }
                 return (startKeyData, limitSuccessor)
             }
@@ -55,7 +55,7 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
             let limitKeyData = try keyComparator.encodeKey(range.upperBound)
 
             guard let limitSuccessor = keyComparator.findShortestSuccessor(forKey: limitKeyData) else {
-                throw Error(.invalidArgument)
+                throw LevelDBError.invalidKeyRange
             }
             return (startKeyData, limitSuccessor)
         }

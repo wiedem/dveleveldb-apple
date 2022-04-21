@@ -4,7 +4,7 @@
 import Foundation
 
 public extension LevelDB {
-     subscript<Key>(key: Key, options: ReadOptions = .default) -> Data? where Key: ContiguousBytes {
+    subscript<Key>(key: Key, options: ReadOptions = .default) -> Data? where Key: ContiguousBytes {
         do {
             return try value(forKey: key, options: options)
         } catch {

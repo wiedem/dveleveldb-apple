@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 import Foundation
-import DVELevelDB_ObjC
 
 public protocol LevelDBKeyEncoder: AnyObject {
     func encodeKey<Key>(_ key: Key) throws -> Data where Key: StringProtocol
@@ -21,7 +20,7 @@ public extension LevelDBKeyComparator {
     func findShortestSuccessor(forKey key: Data) -> Data? { nil }
 }
 
-extension CLevelDB.BytewiseKeyComparator: LevelDBKeyComparator & LevelDBKeyEncoder {
+extension BytewiseKeyComparator: LevelDBKeyComparator & LevelDBKeyEncoder {
     public var keyComparatorName: String { name }
 
     public func compareKeys(key1: Data, key2: Data) -> ComparisonResult {
@@ -38,7 +37,7 @@ extension CLevelDB.BytewiseKeyComparator: LevelDBKeyComparator & LevelDBKeyEncod
 
     public func encodeKey<Key>(_ key: Key) throws -> Data where Key: StringProtocol {
         guard let keyData = key.data(using: .utf8, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
+            throw LevelDBError.keyEncodingFailed
         }
         return keyData
     }

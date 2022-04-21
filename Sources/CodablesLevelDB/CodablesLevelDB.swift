@@ -1,10 +1,9 @@
 // Copyright (c) diva-e NEXT GmbH. All rights reserved.
 // Licensed under the MIT License.
 
-import DVELevelDB_ObjC
 import Foundation
 
-open class CodablesLevelDB<Key>: LevelDB<CLevelDB.BytewiseKeyComparator> where Key: CodingKey {
+open class CodablesLevelDB<Key>: LevelDB<BytewiseKeyComparator> where Key: CodingKey {
     private let valueCoder: LevelDBValueCoder
 
     public init(
@@ -46,15 +45,15 @@ open class CodablesLevelDB<Key>: LevelDB<CLevelDB.BytewiseKeyComparator> where K
         try setValue(valueData, forKey: key.stringValue, options: options)
     }
 
-    public func removeValue(forKey key: Key, options: WriteOptions = .default) throws  {
+    public func removeValue(forKey key: Key, options: WriteOptions = .default) throws {
         try removeValue(forKey: key.stringValue, options: options)
     }
 
     public subscript<Value>(key: Key, options: ReadOptions = .default) -> Value? where Value: Decodable {
-       do {
-           return try value(forKey: key, options: options)
-       } catch {
-           fatalError("Error getting value from DB: \(error)")
-       }
-   }
+        do {
+            return try value(forKey: key, options: options)
+        } catch {
+            fatalError("Error getting value from DB: \(error)")
+        }
+    }
 }

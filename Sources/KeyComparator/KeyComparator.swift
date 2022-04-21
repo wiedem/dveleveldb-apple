@@ -40,7 +40,7 @@ open class KeyComparator: LevelDBKeyComparator & LevelDBKeyEncoder {
 
     public func encodeKey<Key>(_ key: Key) throws -> Data where Key: StringProtocol {
         guard let keyData = key.data(using: stringKeyEncoding, allowLossyConversion: false) else {
-            throw CLevelDB.Error(.invalidArgument)
+            throw LevelDBError.keyEncodingFailed
         }
         return keyData
     }

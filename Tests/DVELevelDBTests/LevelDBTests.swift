@@ -110,7 +110,7 @@ final class LevelDBTests: XCTestCase {
         let decoder = JSONDecoder()
 
         //
-        let value: [Int: String] = [123456: "Test"]
+        let value = [123_456: "Test"]
         try levelDB.setValue(value, forKey: "EncodedKey1", encoder: encoder)
 
         //
@@ -242,9 +242,9 @@ final class LevelDBTests: XCTestCase {
         options.compression = .none
         let levelDB = try LevelDB(directoryURL: directoryUrl, options: options)
 
-        let value1 = Data(repeating: 1, count: 100*1024)
-        let value2 = Data(repeating: 2, count: 200*1024)
-        let value3 = Data(repeating: 3, count: 300*1024)
+        let value1 = Data(repeating: 1, count: 100 * 1024)
+        let value2 = Data(repeating: 2, count: 200 * 1024)
+        let value3 = Data(repeating: 3, count: 300 * 1024)
 
         try levelDB.setValue(value1, forKey: "A1", options: .useSyncWrite)
         try levelDB.setValue(value2, forKey: "B1", options: .useSyncWrite)

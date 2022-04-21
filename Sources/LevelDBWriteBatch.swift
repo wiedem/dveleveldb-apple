@@ -76,7 +76,7 @@ public extension LevelDB.WriteBatch where KeyComparator: LevelDBKeyEncoder {
     ) throws where Key: StringProtocol, Value: StringProtocol {
         let keyData = try levelDB.keyComparator.encodeKey(key)
         guard let valueData = value.data(using: encoding, allowLossyConversion: false) else {
-            throw LevelDB.Error(.invalidArgument)
+            throw LevelDBError.valueConversionFailed
         }
         setValue(valueData, forKey: keyData)
     }

@@ -4,14 +4,12 @@
 import DVELevelDB_ObjC
 import Foundation
 
-public extension LevelDB {
-    typealias Options = CLevelDB.Options
-    typealias Snapshot = CLevelDB.Snapshot
-    typealias Logger = CLevelDB.Logger
-    typealias FilterPolicy = CLevelDB.FilterPolicy
-    typealias ReadOptions = CLevelDB.ReadOptions
-    typealias WriteOptions = CLevelDB.WriteOptions
-    typealias Error = CLevelDB.Error
+public typealias BytewiseKeyComparator = CLevelDB.BytewiseKeyComparator
+
+public enum LevelDBError: Error {
+    case invalidKeyRange
+    case keyEncodingFailed
+    case valueConversionFailed
 }
 
 open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
@@ -84,7 +82,7 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
                 }
             }
         }
-        return cLevelDB.getApproximateSizes(for: cKeyRanges).map { $0.uint64Value }
+        return cLevelDB.getApproximateSizes(for: cKeyRanges).map(\.uint64Value)
     }
 
     public func compact() {
@@ -124,7 +122,7 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
     }
 
     public func createSnapshot() -> Snapshot {
-        .init(db: cLevelDB)
+        Snapshot(db: cLevelDB)
     }
 
     public func forEach(_ body: ((key: Data, value: Data)) throws -> Void, options: ReadOptions = .default) throws {
@@ -134,6 +132,15 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
             try body((key: keyData, value: value))
         }
     }
+}
+
+public extension LevelDB {
+    typealias Options = CLevelDB.Options
+    typealias Snapshot = CLevelDB.Snapshot
+    typealias Logger = CLevelDB.Logger
+    typealias FilterPolicy = CLevelDB.FilterPolicy
+    typealias ReadOptions = CLevelDB.ReadOptions
+    typealias WriteOptions = CLevelDB.WriteOptions
 }
 
 public extension LevelDB {
