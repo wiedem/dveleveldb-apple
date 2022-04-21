@@ -307,7 +307,7 @@ final class LevelDBTests: XCTestCase {
         try levelDB.compact(keyRange: "A1"..."B1")
     }
 
-    func testForEach() throws {
+    func testSequenceConformance() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
 
         let key1 = Data([0x01])
@@ -316,16 +316,20 @@ final class LevelDBTests: XCTestCase {
         try levelDB.setValue("Value1", forKey: key1)
         try levelDB.setValue("Value2", forKey: key2)
 
-        var processedEntries = 0
-        try levelDB.forEach { value, key in
-            processedEntries += 1
-            if key == key1 {
-                XCTAssert(value == "Value1".data(using: .utf8))
-            } else if key == key2 {
-                XCTAssert(value == "Value2".data(using: .utf8))
-            }
+        var processedElements = [(Data, Data)]()
+
+        for (key, value) in levelDB {
+            processedElements.append((key, value))
         }
-        XCTAssertEqual(processedEntries, 2)
+        XCTAssertEqual(processedElements.count, 2)
+        XCTAssert(
+            {
+                let expectedElements = [(key1, "Value1".data(using: .utf8)!), (key2, "Value2".data(using: .utf8)!)]
+                return processedElements.elementsEqual(expectedElements) {
+                    $0.0 == $1.0 && $0.1 == $1.1
+                }
+            }()
+        )
     }
 }
 

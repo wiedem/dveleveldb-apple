@@ -116,14 +116,6 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
     public func createSnapshot() -> Snapshot {
         Snapshot(db: cLevelDB)
     }
-
-    @inlinable
-    public func forEach(_ body: ((key: Data, value: Data)) throws -> Void, options: ReadOptions = .default) throws {
-        for key in self {
-            let value = try value(forKey: key, options: options)!
-            try body((key: key, value: value))
-        }
-    }
 }
 
 public extension LevelDB {
@@ -202,23 +194,5 @@ public extension LevelDB where KeyComparator == CLevelDB.BytewiseKeyComparator {
             lruBlockCacheSize: lruBlockCacheSize,
             logger: LevelDBBlockLogger(logger)
         )
-    }
-}
-
-extension LevelDB: Sequence {
-    public struct Iterator: IteratorProtocol {
-        let keyEnumerator: NSEnumerator
-
-        public init(levelDB: LevelDB) {
-            keyEnumerator = levelDB.cLevelDB.keyEnumerator()
-        }
-
-        public func next() -> Data? {
-            keyEnumerator.nextObject() as! Data?
-        }
-    }
-
-    public func makeIterator() -> Iterator {
-        Iterator(levelDB: self)
     }
 }

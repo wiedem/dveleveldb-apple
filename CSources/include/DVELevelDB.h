@@ -12,4 +12,5 @@
 #import "DVECLevelDBKeyRange.h"
 #import "DVECLevelDBBytewiseKeyComparator.h"
 #import "DVECLevelDBFilterPolicy.h"
+#import "DVECLevelDBIterator.h"
 #import "DVECLevelDBLogger.h"

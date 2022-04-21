@@ -6,6 +6,7 @@
 #import "DVECLevelDBKeyComparator.h"
 #import "DVECLevelDBKeyRange.h"
 #import "DVECLevelDBFilterPolicy.h"
+#import "DVECLevelDBIterator.h"
 
 #define KVC_SWIFT_UNAVAILABLE NS_SWIFT_UNAVAILABLE("Key value coding method not available for Swift.")
 
@@ -65,7 +66,7 @@ __attribute__((objc_subclassing_restricted))
 - (nullable NSData *)objectForKeyedSubscript:(NSData *)key;
 - (void)setObject:(NSData *)obj forKeyedSubscript:(NSData *)key;
 
-- (NSEnumerator<NSData *>*)keyEnumerator;
+- (DVECLevelDBIterator *)iteratorWithOptions:(DVECLevelDBReadOptions *)options;
 
 - (NSArray<NSNumber *> *)getApproximateSizesForKeyRanges:(NSArray<DVECLevelDBKeyRange *> *)keyRanges;
 - (void)compactWithStartKey:(nullable NSData *)startKey endKey:(nullable NSData *)endKey;

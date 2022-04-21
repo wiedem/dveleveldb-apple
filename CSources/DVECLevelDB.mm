@@ -10,7 +10,6 @@
 #import "DVECLevelDBOptions+Internal.h"
 #import "DVECLevelDBReadOptions+Internal.h"
 #import "DVECLevelDBWriteOptions+Internal.h"
-#import "DVECLevelDBKeyEnumerator.h"
 #import "DVECLevelDBKeyComparator.h"
 #import "DVECLevelDBInternalComparator.h"
 #import "DVECLevelDBError.h"
@@ -375,8 +374,8 @@ void copyDataToString(NSData *data, std::string &string) {
     }
 }
 
-- (NSEnumerator<NSData *>*)keyEnumerator {
-    return [[DVECLevelDBKeyEnumerator alloc] initWithDB:self reverse:NO options:[DVECLevelDBReadOptions new]];
+- (DVECLevelDBIterator *)iteratorWithOptions:(DVECLevelDBReadOptions *)options {
+    return [[DVECLevelDBIterator alloc] initWithLevelDB:self readOptions:options];
 }
 
 - (NSArray<NSNumber *> *)getApproximateSizesForKeyRanges:(NSArray<DVECLevelDBKeyRange *> *)keyRanges {
