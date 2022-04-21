@@ -10,20 +10,20 @@ open class KeyComparator: LevelDBKeyComparator & LevelDBKeyEncoder {
     private let stringKeyEncoding: String.Encoding
     private let comparator: (Data, Data) -> ComparisonResult
     private let findShortestSeparator: ((Data, Data) -> Data?)?
-    private let findShortestSuccessor: ((Data) -> Data?)?
+    private let findShortSuccessor: ((Data) -> Data?)?
 
     public init(
         name: String,
         stringKeyEncoding: String.Encoding = .utf8,
         comparator: @escaping (Data, Data) -> ComparisonResult,
         findShortestSeparator: ((Data, Data) -> Data?)? = nil,
-        findShortestSuccessor: ((Data) -> Data?)? = nil
+        findShortSuccessor: ((Data) -> Data?)? = nil
     ) {
         keyComparatorName = name
         self.stringKeyEncoding = stringKeyEncoding
         self.comparator = comparator
         self.findShortestSeparator = findShortestSeparator
-        self.findShortestSuccessor = findShortestSuccessor
+        self.findShortSuccessor = findShortSuccessor
     }
 
     public func compare(_ lhs: Data, with rhs: Data) -> ComparisonResult {
@@ -34,8 +34,8 @@ open class KeyComparator: LevelDBKeyComparator & LevelDBKeyEncoder {
         findShortestSeparator?(startKey, limitKey)
     }
 
-    public func findShortestSuccessor(forKey key: Data) -> Data? {
-        findShortestSuccessor?(key)
+    public func findShortSuccessor(forKey key: Data) -> Data? {
+        findShortSuccessor?(key)
     }
 
     public func encodeKey<Key>(_ key: Key) throws -> Data where Key: StringProtocol {

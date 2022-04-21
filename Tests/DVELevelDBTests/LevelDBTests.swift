@@ -189,8 +189,8 @@ final class LevelDBTests: XCTestCase {
             let key1String = String(data: key1, encoding: .utf8)!
             let key2String = String(data: key2, encoding: .utf8)!
             return key1String.compare(key2String)
-        } findShortestSuccessor: { key in
-            // The method to search for the shortest successor.
+        } findShortSuccessor: { key in
+            // The method to search for a short successor.
             let keyString = String(data: key, encoding: .utf8)!
             guard let asciiValue = keyString.first!.asciiValue else {
                 return nil

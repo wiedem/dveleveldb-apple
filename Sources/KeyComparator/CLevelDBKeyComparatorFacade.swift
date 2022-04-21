@@ -19,8 +19,8 @@ public class CLevelDBKeyComparatorFacade: NSObject, CLevelDB.KeyComparator {
         keyComparator.compare(lhs, with: rhs)
     }
 
-    public func findShortestSuccessor(_ key: Data) -> Data? {
-        keyComparator.findShortestSuccessor(forKey: key)
+    public func findShortSuccessor(_ key: Data) -> Data? {
+        keyComparator.findShortSuccessor(forKey: key)
     }
 
     public func findShortestSeparator(_ start: Data, limit: Data) -> Data? {

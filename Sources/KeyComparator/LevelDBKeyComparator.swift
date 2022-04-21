@@ -12,12 +12,12 @@ public protocol LevelDBKeyComparator: AnyObject {
 
     func compare(_ lhs: Data, with rhs: Data) -> ComparisonResult
     func findShortestSeparator(startKey: Data, limitKey: Data) -> Data?
-    func findShortestSuccessor(forKey key: Data) -> Data?
+    func findShortSuccessor(forKey key: Data) -> Data?
 }
 
 public extension LevelDBKeyComparator {
     func findShortestSeparator(startKey: Data, limitKey: Data) -> Data? { nil }
-    func findShortestSuccessor(forKey key: Data) -> Data? { nil }
+    func findShortSuccessor(forKey key: Data) -> Data? { nil }
 }
 
 extension BytewiseKeyComparator: LevelDBKeyComparator & LevelDBKeyEncoder {
@@ -31,8 +31,8 @@ extension BytewiseKeyComparator: LevelDBKeyComparator & LevelDBKeyEncoder {
         findShortestSeparator(startKey, limit: limitKey)
     }
 
-    public func findShortestSuccessor(forKey key: Data) -> Data? {
-        findShortestSuccessor(key)
+    public func findShortSuccessor(forKey key: Data) -> Data? {
+        findShortSuccessor(key)
     }
 
     public func encodeKey<Key>(_ key: Key) throws -> Data where Key: StringProtocol {

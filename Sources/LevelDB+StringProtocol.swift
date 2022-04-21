@@ -39,7 +39,7 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
             let limitKeyData = try keyComparator.encodeKey(range.upperBound)
 
             guard range.contains(range.upperBound) == false else {
-                guard let limitSuccessor = keyComparator.findShortestSuccessor(forKey: limitKeyData) else {
+                guard let limitSuccessor = keyComparator.findShortSuccessor(forKey: limitKeyData) else {
                     throw LevelDBError.invalidKeyRange
                 }
                 return (startKeyData, limitSuccessor)
@@ -54,7 +54,7 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
             let startKeyData = try keyComparator.encodeKey(range.lowerBound)
             let limitKeyData = try keyComparator.encodeKey(range.upperBound)
 
-            guard let limitSuccessor = keyComparator.findShortestSuccessor(forKey: limitKeyData) else {
+            guard let limitSuccessor = keyComparator.findShortSuccessor(forKey: limitKeyData) else {
                 throw LevelDBError.invalidKeyRange
             }
             return (startKeyData, limitSuccessor)

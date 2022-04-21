@@ -12,7 +12,7 @@ NS_SWIFT_NAME(CLevelDB.KeyComparator)
 
 @optional
 - (nullable NSData *)findShortestSeparator:(NSData *)start limit:(NSData *)limit;
-- (nullable NSData *)findShortestSuccessor:(NSData *)key;
+- (nullable NSData *)findShortSuccessor:(NSData *)key;
 @end
 
 NS_ASSUME_NONNULL_END

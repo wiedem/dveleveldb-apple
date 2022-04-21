@@ -46,7 +46,7 @@
     return createDataForString(startString);
 }
 
-- (NSData *)findShortestSuccessor:(NSData *)key {
+- (NSData *)findShortSuccessor:(NSData *)key {
     std::string keyString;
     copyDataToString(key, keyString);
 

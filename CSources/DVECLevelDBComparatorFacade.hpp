@@ -36,9 +36,9 @@ public:
     }
     
     void FindShortSuccessor(std::string *key) const override {
-        if ([_comparator respondsToSelector:@selector(findShortestSuccessor:)]) {
+        if ([_comparator respondsToSelector:@selector(findShortSuccessor:)]) {
             NSData *keyData = dataForString(*key);
-            NSData *newKeyData = [_comparator findShortestSuccessor:keyData];
+            NSData *newKeyData = [_comparator findShortSuccessor:keyData];
             if (newKeyData != nil) {
                 copyDataToString(newKeyData, *key);
             }
