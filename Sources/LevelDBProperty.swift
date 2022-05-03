@@ -3,10 +3,15 @@
 
 import Foundation
 
+/// A LevelDB state property.
 public enum LevelDBProperty {
+    /// The number of files for the DB at the specified level.
     case numFiles(level: UInt64)
+    /// The statistics about the internal operations of the DB.
     case stats
+    /// A description of all sstables that make up the DB contents.
     case ssTables
+    /// The current approximate memory usage of the DB in bytes.
     case approximateMemoryUsage
 }
 
