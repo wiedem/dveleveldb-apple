@@ -9,7 +9,7 @@ To use the framework add the following dependency to your `Package.swift`:
 ```
 
 ## Compatibility
-DVESecurity is compatible with iOS 12, macOS 11 and requires at least Swift 5.4.
+DVELevelDB is compatible with iOS 12, macOS 11 and requires at least Swift 5.4.
 The framework also follows the [SemVer 2.0.0] rules.
 
 [Swift Package Manager]: https://swift.org/package-manager/ "Swift Package Manager"
