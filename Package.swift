@@ -1,11 +1,11 @@
-// swift-tools-version:5.4
+// swift-tools-version:5.8
 
 import PackageDescription
 
 let package = Package(
     name: "DVELevelDB",
     platforms: [
-        .iOS(.v12),
+        .iOS(.v13),
         .macOS(.v11),
     ],
     products: [
@@ -14,8 +14,7 @@ let package = Package(
             targets: ["DVELevelDB", "DVELevelDB_ObjC"]
         ),
     ],
-    dependencies: [
-    ],
+    dependencies: [],
     targets: [
         .target(
             name: "DVELevelDB",
@@ -33,7 +32,6 @@ let package = Package(
             cxxSettings: [
                 .headerSearchPath("leveldb"),
                 .define("LEVELDB_PLATFORM_POSIX=1"),
-                // .define("NDEBUG"),
             ]
         ),
         .testTarget(

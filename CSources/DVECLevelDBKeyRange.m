@@ -26,8 +26,8 @@
     if (![object isKindOfClass:[DVECLevelDBKeyRange class]]) {
         return NO;
     }
-    
-    return [self isEqualTo:(DVECLevelDBKeyRange *)object];
+
+    return [self isEqualToKeyRange:object];
 }
 
 - (NSUInteger)hash {
