@@ -19,6 +19,16 @@ public enum LevelDBError: Error {
 ///
 /// - Note: There's no explicit method to close a database instance, the database will be automatically closed when the instance is deinitialized.
 open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
+    /// The version of the LevelDB engine.
+    public static var version: (major: Int32, minor: Int32) {
+        (CLevelDB.majorVersion, CLevelDB.minorVersion)
+    }
+
+    /// The directory URL with which the LevelDB instance was initialized.
+    public var directoryURL: URL {
+        cLevelDB.directoryURL
+    }
+
     /// The key comparator, which is used for key-based operations in the LevelDB
     public let keyComparator: KeyComparator
 
@@ -233,7 +243,10 @@ public extension LevelDB {
 }
 
 public extension LevelDB where KeyComparator == CLevelDB.BytewiseKeyComparator {
-    static let version: (major: Int32, minor: Int32) = (CLevelDB.majorVersion, CLevelDB.minorVersion)
+    /// The version of the LevelDB engine.
+    static var version: (major: Int32, minor: Int32) {
+        (CLevelDB.majorVersion, CLevelDB.minorVersion)
+    }
 
     class func destroyDb(at url: URL, options: Options) throws {
         try CLevelDB.destroy(atDirectoryURL: url, options: options)
