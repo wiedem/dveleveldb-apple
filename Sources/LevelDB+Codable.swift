@@ -29,6 +29,16 @@ public extension LevelDB {
         return try decoder.decode(Value.self, from: valueData)
     }
 
+    subscript<Key, Value, Decoder>(
+        key: Key,
+        decoder: Decoder,
+        options: ReadOptions = .default
+    ) -> Value? where Key: ContiguousBytes, Value: Decodable, Decoder: LevelDBDataDecoder {
+        get throws {
+            try value(forKey: key, decoder: decoder, options: options)
+        }
+    }
+
     func setValue<Value, Key, Encoder>(
         _ value: Value,
         forKey key: Key,
@@ -51,6 +61,16 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
             return nil
         }
         return try decoder.decode(Value.self, from: valueData)
+    }
+
+    subscript<Key, Value, Decoder>(
+        key: Key,
+        decoder: Decoder,
+        options: ReadOptions = .default
+    ) -> Value? where Key: StringProtocol, Value: Decodable, Decoder: LevelDBDataDecoder {
+        get throws {
+            try value(forKey: key, decoder: decoder, options: options)
+        }
     }
 
     func setValue<Value, Key, Encoder>(

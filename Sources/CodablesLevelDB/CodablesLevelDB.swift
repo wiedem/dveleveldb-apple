@@ -36,6 +36,15 @@ open class CodablesLevelDB<Key>: LevelDB<BytewiseKeyComparator> where Key: Codin
         return try valueCoder.decode(Value.self, from: valueData)
     }
 
+    public subscript<Value>(
+        key: Key,
+        options: ReadOptions = .default
+    ) -> Value? where Value: Decodable {
+        get throws {
+            try value(forKey: key, options: options)
+        }
+    }
+
     public func setValue<Value>(
         _ value: Value,
         forKey key: Key,
@@ -47,13 +56,5 @@ open class CodablesLevelDB<Key>: LevelDB<BytewiseKeyComparator> where Key: Codin
 
     public func removeValue(forKey key: Key, options: WriteOptions = .default) throws {
         try removeValue(forKey: key.stringValue, options: options)
-    }
-
-    public subscript<Value>(key: Key, options: ReadOptions = .default) -> Value? where Value: Decodable {
-        do {
-            return try value(forKey: key, options: options)
-        } catch {
-            fatalError("Error getting value from DB: \(error)")
-        }
     }
 }

@@ -12,6 +12,15 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
         return try value(forKey: keyData, options: options)
     }
 
+    subscript<Key>(
+        key: Key,
+        options: ReadOptions = .default
+    ) -> Data? where Key: StringProtocol {
+        get throws {
+            try value(forKey: key, options: options)
+        }
+    }
+
     func setValue<Value, Key>(
         _ value: Value,
         forKey key: Key,
@@ -80,15 +89,5 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
         let startKeyData = try keyComparator.encodeKey(keyRange.lowerBound)
         let endKeyData = try keyComparator.encodeKey(keyRange.upperBound)
         compact(startKey: startKeyData, endKey: endKeyData)
-    }
-}
-
-public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
-    subscript<Key>(key: Key, options: ReadOptions = .default) -> Data? where Key: StringProtocol {
-        do {
-            return try value(forKey: key, options: options)
-        } catch {
-            fatalError("Error getting value from DB: \(error)")
-        }
     }
 }

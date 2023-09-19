@@ -43,19 +43,19 @@ class CodablesLevelDBTests: XCTestCase {
         let testObject = TestObject(stringValue: "Test2", intValue: 1)
         try levelDB.setValue(testObject, forKey: .key2)
 
-        let value1: String? = levelDB[.key1]
+        let value1: String? = try levelDB[.key1]
         XCTAssertEqual(value1, "Test1")
 
-        let value2: TestObject? = levelDB[.key2]
+        let value2: TestObject? = try levelDB[.key2]
         XCTAssertNotNil(value2)
         XCTAssertEqual(value2, testObject)
 
-        let value3: String? = levelDB[.key3]
+        let value3: String? = try levelDB[.key3]
         XCTAssertNil(value3)
 
         //
         try levelDB.removeValue(forKey: .key2)
-        let value2B: TestObject? = levelDB[.key2]
+        let value2B: TestObject? = try levelDB[.key2]
         XCTAssertNil(value2B)
     }
 

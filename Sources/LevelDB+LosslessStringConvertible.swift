@@ -21,6 +21,16 @@ public extension LevelDB {
         return value
     }
 
+    subscript<Key, Value>(
+        key: Key,
+        encoding: String.Encoding = .utf8,
+        options: ReadOptions = .default
+    ) -> Value? where Key: ContiguousBytes, Value: LosslessStringConvertible {
+        get throws {
+            try value(forKey: key, encoding: encoding, options: options)
+        }
+    }
+
     func setValue<Value, Key>(
         _ value: Value,
         forKey key: Key,
@@ -32,20 +42,6 @@ public extension LevelDB {
         }
 
         try setValue(valueData, forKey: key, options: options)
-    }
-}
-
-public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
-    subscript<Key, Value>(
-        key: Key,
-        encoding: String.Encoding = .utf8,
-        options: ReadOptions = .default
-    ) -> Value? where Key: StringProtocol, Value: LosslessStringConvertible {
-        do {
-            return try value(forKey: key, encoding: encoding, options: options)
-        } catch {
-            fatalError("Error getting value from DB: \(error))")
-        }
     }
 }
 
@@ -65,6 +61,16 @@ public extension LevelDB where KeyComparator: LevelDBKeyEncoder {
             throw LevelDBError.valueConversionFailed
         }
         return value
+    }
+
+    subscript<Key, Value>(
+        key: Key,
+        encoding: String.Encoding = .utf8,
+        options: ReadOptions = .default
+    ) -> Value? where Key: StringProtocol, Value: LosslessStringConvertible {
+        get throws {
+            try value(forKey: key, encoding: encoding, options: options)
+        }
     }
 
     func setValue<Value, Key>(

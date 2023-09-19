@@ -13,10 +13,10 @@ public enum LevelDBError: Error {
 }
 
 /// A LevelDB instance for fast key-value storage.
-///
+/// 
 /// A LevelDB instance is a key-value store with arbitrary keys and values.
 /// The ``KeyComparator`` type defines how keys are handled in the database.
-///
+/// 
 /// - Note: There's no explicit method to close a database instance, the database will be automatically closed when the instance is deinitialized.
 open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
     /// The version of the LevelDB engine.
@@ -92,6 +92,12 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
             }
         } catch CLevelDB.Error.notFound {
             return nil
+        }
+    }
+
+    public subscript<Key>(key: Key, options: ReadOptions = .default) -> Data? where Key: ContiguousBytes {
+        get throws {
+            try value(forKey: key, options: options)
         }
     }
 
@@ -208,6 +214,16 @@ open class LevelDB<KeyComparator> where KeyComparator: LevelDBKeyComparator {
         }
     }
 
+    /// Create a snapshot of the current state of the DB.
+    ///
+    /// Snapshots allow to get the state of the DB at a given time, which does not include subsequent changes.
+    ///
+    /// ```
+    /// let snapshot = levelDB.createSnapshot()
+    /// try levelDB.value(forKey: "Key", options: .usingSnapshot(snapshot))
+    /// ```
+    ///
+    /// - Returns: The snapshot of the DB at the time of the function call.
     public func createSnapshot() -> Snapshot {
         Snapshot(db: cLevelDB)
     }

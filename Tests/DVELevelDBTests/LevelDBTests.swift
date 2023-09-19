@@ -43,6 +43,21 @@ final class LevelDBTests: XCTestCase {
         XCTAssertNotNil(approximateMemoryUsage)
     }
 
+    func testGetDataValueWithContiguousBytes() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+
+        let key = "DataKey1".data(using: .utf8)!
+        let value = "DataValue1".data(using: .utf8)!
+
+        try levelDB.setValue(value, forKey: key)
+
+        let dbValue1 = try levelDB.value(forKey: key)
+        XCTAssertEqual(dbValue1, value)
+
+        let dbValue2 = try levelDB[key]
+        XCTAssertEqual(dbValue2, value)
+    }
+
     func testRemoveKey() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
 
@@ -71,17 +86,17 @@ final class LevelDBTests: XCTestCase {
         //
         let value1: Data? = try levelDB.value(forKey: "DataKey1")
         XCTAssertEqual(value1, dataValue)
-        let value1B: Data? = levelDB["DataKey1"]
+        let value1B: Data? = try levelDB["DataKey1"]
         XCTAssertEqual(value1B, dataValue)
 
         let value2: String? = try levelDB.value(forKey: "StringKey1")
         XCTAssertEqual(value2, "Value1")
-        let value2B: String? = levelDB["StringKey1"]
+        let value2B: String? = try levelDB["StringKey1"]
         XCTAssertEqual(value2B, "Value1")
 
         //
         try levelDB.removeValue(forKey: "DataKey1")
-        let value1C: Data? = levelDB["DataKey1"]
+        let value1C: Data? = try levelDB["DataKey1"]
         XCTAssertNil(value1C)
     }
 
@@ -94,7 +109,7 @@ final class LevelDBTests: XCTestCase {
 
         let value1: Int? = try levelDB.value(forKey: "Key1")
         XCTAssertEqual(value1, 1)
-        let value1B: Int? = levelDB["Key1"]
+        let value1B: Int? = try levelDB["Key1"]
         XCTAssertEqual(value1B, 1)
 
         let value2: Double? = try levelDB.value(forKey: "Key2")
@@ -131,10 +146,10 @@ final class LevelDBTests: XCTestCase {
             try batch.removeValue(forKey: "Key1")
         }
 
-        let value1B: Data? = levelDB["Key1"]
+        let value1B: Data? = try levelDB["Key1"]
         XCTAssertNil(value1B)
 
-        let value2B: Data? = levelDB["Key2"]
+        let value2B: Data? = try levelDB["Key2"]
         XCTAssertEqual(value2B, value2)
     }
 
@@ -153,13 +168,13 @@ final class LevelDBTests: XCTestCase {
             try batch.setValue("Key2Value1", forKey: "Key2")
         }
 
-        let value1: String? = levelDB["Key1"]
+        let value1: String? = try levelDB["Key1"]
         XCTAssertEqual(value1, "Key1Value1")
 
-        let value2: String? = levelDB["Key3"]
+        let value2: String? = try levelDB["Key3"]
         XCTAssertNil(value2)
 
-        let value3: String? = levelDB["Key2"]
+        let value3: String? = try levelDB["Key2"]
         XCTAssertEqual(value3, "Key2Value1")
     }
 
@@ -178,7 +193,7 @@ final class LevelDBTests: XCTestCase {
             //
         }
 
-        let value: String? = levelDB["Key1"]
+        let value: String? = try levelDB["Key1"]
         XCTAssertEqual(value, "Value1")
     }
 
