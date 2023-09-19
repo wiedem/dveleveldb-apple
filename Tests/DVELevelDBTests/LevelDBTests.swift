@@ -27,6 +27,11 @@ final class LevelDBTests: XCTestCase {
         XCTAssertEqual(LevelDB.version.minor, 23, "Expected minorVersion to be \(23) but got \(LevelDB.version.minor)")
     }
 
+    func testGetDirectoryURL() throws {
+        let levelDB = try LevelDB(directoryURL: directoryUrl)
+        XCTAssertEqual(levelDB.directoryURL, directoryUrl)
+    }
+
     func testDBProperties() throws {
         let levelDB = try LevelDB(directoryURL: directoryUrl)
 
