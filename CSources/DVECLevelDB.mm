@@ -165,6 +165,7 @@ void copyDataToString(NSData *data, std::string &string) {
         return nil;
     }
 
+    _directoryURL = url;
     _options = options;
 
     // Logger.
@@ -216,6 +217,7 @@ void copyDataToString(NSData *data, std::string &string) {
         return nil;
     }
 
+    _directoryURL = url;
     _options = options;
 
     // Logger.
