@@ -16,5 +16,6 @@ typedef NS_ERROR_ENUM(DVECLevelDBErrorDomain, DVECLevelDBError) {
     DVECLevelDBErrorIOError = 3,
     DVECLevelDBErrorNotSupported = 4,
     DVECLevelDBErrorInvalidArgument = 5,
-    DVECLevelDBErrorInvalidType = 6
+    DVECLevelDBErrorInvalidType = 6,
+    DVECLevelDBErrorUnsupportedKeyEncoding = 7
 } NS_SWIFT_NAME(CLevelDB.Error);

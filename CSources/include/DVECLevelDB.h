@@ -4,7 +4,9 @@
 #import <Foundation/Foundation.h>
 #import "DVECLevelDBOptions.h"
 #import "DVECLevelDBKeyComparator.h"
+#import "DVECLevelDBKeyRange.h"
 #import "DVECLevelDBFilterPolicy.h"
+#import "DVECLevelDBIterator.h"
 
 #define KVC_SWIFT_UNAVAILABLE NS_SWIFT_UNAVAILABLE("Key value coding method not available for Swift.")
 
@@ -18,42 +20,56 @@ __attribute__((objc_subclassing_restricted))
 @property (nonatomic, strong, readonly) NSURL *directoryURL;
 @property (nonatomic, strong, readonly) DVECLevelDBOptions *options;
 
-+ (BOOL)destroyDbAtDirectoryURL:(NSURL *)url options:(DVECLevelDBOptions *)options error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
-+ (BOOL)repairDbAtDirectoryURL:(NSURL *)url options:(DVECLevelDBOptions *)options error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
++ (BOOL)destroyDbAtDirectoryURL:(NSURL *)url
+                        options:(DVECLevelDBOptions *)options
+                          error:(NSError *_Nullable *_Nullable)error;
+
++ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
+                       options:(DVECLevelDBOptions *)options
+                  simpleLogger:(nullable id<DVECLevelDBSimpleLogger>)simpleLogger
+                         error:(NSError *_Nullable *_Nullable)error;
+
++ (BOOL)repairDbAtDirectoryURL:(NSURL *)url
+                       options:(DVECLevelDBOptions *)options
+                  formatLogger:(nullable id<DVECLevelDBFormatLogger>)formatLogger
+                         error:(NSError *_Nullable *_Nullable)error;
 
 - (instancetype)init NS_UNAVAILABLE;
-- (nullable instancetype)initWithDirectoryURL:(NSURL *)url
-                                      options:(DVECLevelDBOptions *)options
-                                 formatLogger:(nullable id<DVECLevelDBFormatLogger>)formatLogger
-                                keyComparator:(nullable id<DVECLevelDBKeyComparator>)keyComparator
-                                 filterPolicy:(nullable id<DVECLevelDBFilterPolicy>)filterPolicy
-                            lruBlockCacheSize:(size_t)lruBlockCacheSize
-                                        error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
+
 - (nullable instancetype)initWithDirectoryURL:(NSURL *)url
                                       options:(DVECLevelDBOptions *)options
                                  simpleLogger:(nullable id<DVECLevelDBSimpleLogger>)simpleLogger
                                 keyComparator:(nullable id<DVECLevelDBKeyComparator>)keyComparator
                                  filterPolicy:(nullable id<DVECLevelDBFilterPolicy>)filterPolicy
                             lruBlockCacheSize:(size_t)lruBlockCacheSize
-                                        error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
+                                        error:(NSError *_Nullable *_Nullable)error;
 
 - (nullable instancetype)initWithDirectoryURL:(NSURL *)url
                                       options:(DVECLevelDBOptions *)options
-                                        error:(NSError *_Nullable *_Nullable)error NS_SWIFT_UNAVAILABLE("Use init(directoryURL:options:logger:keyComparator:filterPolicy:lruBlockCacheSize:) instead.");
+                                 formatLogger:(nullable id<DVECLevelDBFormatLogger>)formatLogger
+                                keyComparator:(nullable id<DVECLevelDBKeyComparator>)keyComparator
+                                 filterPolicy:(nullable id<DVECLevelDBFilterPolicy>)filterPolicy
+                            lruBlockCacheSize:(size_t)lruBlockCacheSize
+                                        error:(NSError *_Nullable *_Nullable)error;
 
-- (nullable NSString *)valueForKey:(NSString *)key options:(DVECLevelDBReadOptions *)options error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
-- (nullable NSString *)valueForKey:(NSString *)key error:(NSError *_Nullable *_Nullable)error NS_REFINED_FOR_SWIFT;
-- (BOOL)setValue:(nullable NSString *)value forKey:(NSString *)key options:(DVECLevelDBWriteOptions *)options error:(NSError *_Nullable *_Nullable)error;
-- (BOOL)setValue:(nullable NSString *)value forKey:(NSString *)key error:(NSError *_Nullable *_Nullable)error;
-- (BOOL)syncSetValue:(nullable NSString *)value forKey:(NSString *)key error:(NSError *_Nullable *_Nullable)error;
-- (BOOL)removeValueForKey:(NSString *)key options:(DVECLevelDBWriteOptions *)options error:(NSError *_Nullable *_Nullable)error;
-- (BOOL)removeValueForKey:(NSString *)key error:(NSError *_Nullable *_Nullable)error;
-- (BOOL)syncRemoveValueForKey:(NSString *)key error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSString *)dbPropertyForKey:(NSString *)key;
 
-- (nullable NSString *)objectForKeyedSubscript:(NSString *)key;
-- (void)setObject:(NSString *)obj forKeyedSubscript:(NSString *)key;
+- (nullable NSData *)dataForKey:(NSData *)key options:(DVECLevelDBReadOptions *)options error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSData *)dataForKey:(NSData *)key error:(NSError *_Nullable *_Nullable)error;
 
-- (NSEnumerator<NSString *>*)keyEnumerator;
+- (BOOL)setData:(nullable NSData *)data forKey:(NSData *)key options:(DVECLevelDBWriteOptions *)options error:(NSError *_Nullable *_Nullable)error;
+- (BOOL)setData:(nullable NSData *)data forKey:(NSData *)key error:(NSError *_Nullable *_Nullable)error;
+
+- (BOOL)removeValueForKey:(NSData *)key options:(DVECLevelDBWriteOptions *)options error:(NSError *_Nullable *_Nullable)error;
+- (BOOL)removeValueForKey:(NSData *)key error:(NSError *_Nullable *_Nullable)error;
+
+- (nullable NSData *)objectForKeyedSubscript:(NSData *)key;
+- (void)setObject:(NSData *)obj forKeyedSubscript:(NSData *)key;
+
+- (DVECLevelDBIterator *)iteratorWithOptions:(DVECLevelDBReadOptions *)options;
+
+- (NSArray<NSNumber *> *)getApproximateSizesForKeyRanges:(NSArray<DVECLevelDBKeyRange *> *)keyRanges;
+- (void)compactWithStartKey:(nullable NSData *)startKey endKey:(nullable NSData *)endKey;
 
 - (id)valueForKey:(NSString *)key KVC_SWIFT_UNAVAILABLE;
 - (void)setValue:(nullable id)value forKey:(NSString *)key KVC_SWIFT_UNAVAILABLE;

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #import "DVECLevelDBFilterPolicy.h"
+#import "DVECLevelDB+Internal.h"
 #import "leveldb/leveldb/slice.h"
 #import "leveldb/leveldb/filter_policy.h"
 #import <vector>
@@ -28,11 +29,10 @@
     return [NSString stringWithUTF8String:_filterPolicy->Name()];
 }
 
-- (NSData *)createFilterForKeys:(NSArray<NSString *> *)keys currentFilter:(NSData *)currentFilter {
+- (NSData *)createFilterForKeys:(NSArray<NSData *> *)keys currentFilter:(NSData *)currentFilter {
     std::vector<leveldb::Slice> keysSlices;
-    for (NSString *key in keys) {
-        NSData *keyData = [key dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
-        leveldb::Slice keySlice((const char *)keyData.bytes, keyData.length);
+    for (NSData *key in keys) {
+        leveldb::Slice keySlice((const char *)key.bytes, key.length);
         keysSlices.push_back(keySlice);
     }
     
@@ -48,13 +48,9 @@
     }
 }
 
-- (BOOL)keyMayMatch:(NSString *)key filter:(NSString *)filter {
-    NSData *keyData = [key dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
-    leveldb::Slice keySlice((const char *)keyData.bytes, keyData.length);
-
-    NSData *filterData = [filter dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
-    leveldb::Slice filterSlice((const char *)filterData.bytes, filterData.length);
-
+- (BOOL)keyMayMatch:(NSData *)key filter:(NSData *)filter {
+    leveldb::Slice keySlice = sliceForData(key);
+    leveldb::Slice filterSlice = sliceForData(filter);
     return _filterPolicy->KeyMayMatch(keySlice, filterSlice);
 }
 

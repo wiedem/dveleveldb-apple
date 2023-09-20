@@ -8,8 +8,8 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(CLevelDB.FilterPolicy)
 @protocol DVECLevelDBFilterPolicy <NSObject>
 @property (nonatomic, readonly) NSString *name;
-- (NSData *)createFilterForKeys:(NSArray<NSString *> *)keys currentFilter:(NSData *)currentFilter;
-- (BOOL)keyMayMatch:(NSString *)key filter:(NSString *)filter;
+- (NSData *)createFilterForKeys:(NSArray<NSData *> *)keys currentFilter:(NSData *)currentFilter;
+- (BOOL)keyMayMatch:(NSData *)key filter:(NSData *)filter;
 @end
 
 NS_SWIFT_NAME(CLevelDB.NewBloomFilterPolicy)

@@ -10,12 +10,6 @@
 
 @implementation DVECLevelDBWriteOptions
 
-+ (instancetype)DVECLevelDBWriteOptionsWithSyncWrite:(BOOL)syncWrite {
-    DVECLevelDBWriteOptions *options = [DVECLevelDBWriteOptions new];
-    options.syncWrite = syncWrite;
-    return options;
-}
-
 - (instancetype)init {
     if (self = [super init]) {
         _options = new leveldb::WriteOptions;

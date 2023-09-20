@@ -11,13 +11,6 @@
 
 @implementation DVECLevelDBReadOptions
 
-+ (instancetype)DVECLevelDBReadOptionsWithVerifyChecksums:(BOOL)verifyChecksums fillCache:(BOOL)fillCache {
-    DVECLevelDBReadOptions *options = [DVECLevelDBReadOptions new];
-    options.verifyChecksums = verifyChecksums;
-    options.fillCache = fillCache;
-    return options;
-}
-
 - (instancetype)init {
     if (self = [super init]) {
         _options = new leveldb::ReadOptions;
